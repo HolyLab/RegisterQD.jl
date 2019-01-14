@@ -1,12 +1,21 @@
-authors = ["Cody-G <codyjgreer@gmail.com>"]
 name = "RegisterQD"
-uuid = "fa117460-182b-11e9-1e66-6d6efd6ee78c"
+uuid = "ac24ea0c-1830-11e9-18d4-81f172323054"
 version = "0.1.0"
 
 [deps]
-
-[compat]
-julia = "0.7"
+AffineTransforms = "7914e933-53e9-565d-9a34-2612de3a385b"
+CenterIndexedArrays = "46a7138f-0d70-54e1-8ada-fb8296f91f24"
+CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+QuadDIRECT = "dae52e8d-d666-5120-a592-9e15c33b8d7a"
+RegisterCore = "67712758-55e7-5c3c-8e85-dda1d7758434"
+RegisterMismatch = "3c0dd727-6833-5f5d-a1e8-c0d421935c74"
+Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

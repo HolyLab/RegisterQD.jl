@@ -1,5 +1,6 @@
 using RegisterQD
 using Test
 
-# write your own tests here
-@test 1 == 2
+include("qd_random.jl")
+include("qd_standard.jl")
+include("gridsearch.jl")
