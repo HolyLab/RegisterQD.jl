@@ -1,6 +1,7 @@
 using StaticArrays, Interpolations
 using Images, CoordinateTransformations, Rotations
 using RegisterMismatch
+using RegisterQD
 
 #import BlockRegistration, RegisterOptimize
 #using RegisterCore, RegisterPenalty, RegisterDeformation, RegisterMismatch, RegisterFit

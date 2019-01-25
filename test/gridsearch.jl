@@ -1,4 +1,5 @@
 using AffineTransforms #TODO: remove
+using RegisterQD
 using Test
 
 @testset "Grid search rigid registration" begin
