@@ -1,4 +1,4 @@
-using StaticArrays, Interpolations
+using StaticArrays, Interpolations, LinearAlgebra
 using Images, CoordinateTransformations, Rotations
 using RegisterMismatch
 using RegisterQD
@@ -12,15 +12,15 @@ using Test, TestImages
 function fixedmov(img, tfm)
     img = float(img)
     img2 = warp(img,tfm)
-    inds = intersect.(indices(img), indices(img2))
+    inds = intersect.(axes(img), axes(img2))
     fixed = img[inds...]
     moving = img2[inds...]
     return fixed, moving
 end
 
 #helpers to convert Transformations to AffineMaps
-to_affine(tfm::Translation) = AffineMap(eye(length(tfm.translation)), tfm.translation)
-to_affine(tfm::LinearMap) = AffineMap(eye(length(tfm.translation)), tfm.translation)
+to_affine(tfm::Translation) = AffineMap(Matrix{Float64}(LinearAlgebra.I, length(tfm.translation), length(tfm.translation)), tfm.translation)
+to_affine(tfm::LinearMap) = AffineMap(Matrix{Float64}(LinearAlgebra.I, length(tfm.translation), length(tfm.translation)), tfm.translation)
 to_affine(tfm::AffineMap) = tfm
 
 #Helper to test that a found transform is (roughly) the inverse of the original transform
@@ -30,7 +30,7 @@ function tfmtest(tfm, tfminv)
     offdiagtol = 0.005
     vtol = 0.1
     @test all(x->(1-diagtol < x < 1+diagtol), diag(comp.linear))
-    @test all(x->(-offdiagtol < x < offdiagtol), comp.linear.-diagm(diag(comp.linear)))
+    @test all(x->(-offdiagtol < x < offdiagtol), comp.linear.-Matrix(Diagonal(diag(comp.linear))))
     @test all(abs.(comp.translation) .< vtol)
 end
 
@@ -49,7 +49,7 @@ end
     tfmtest(tfm, tform)
     
     #Rigid transform
-    SD = eye(2)
+    SD = Matrix{Float64}(LinearAlgebra.I, 2, 2)
     tfm = Translation(@SVector([14, 17]))∘LinearMap(RotMatrix(0.3)) #no distortion for now
     fixed, moving = fixedmov(centered(img), tfm)
     mxshift = (100,100) #make sure this isn't too small
@@ -58,7 +58,7 @@ end
     tform, mm = qd_rigid(centered(fixed), centered(moving), mxshift, mxrot, minwidth_rot, SD; maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, tform)
     #with anisotropic sampling
-    SD = diagm([0.5; 1.0])
+    SD = Matrix(Diagonal([0.5; 1.0]))
     tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.3)*SD)
     fixed, moving = fixedmov(centered(img), tfm)
     tform, mm = qd_rigid(centered(fixed), centered(moving), mxshift, mxrot, minwidth_rot, SD; maxevals=1000, rtol=0, fvalue=0.0002)
@@ -68,7 +68,7 @@ end
     tfm = Translation(@SVector([14, 17]))∘LinearMap(RotMatrix(0.01))
     #make it harder with nonuniform scaling
     scale = @SMatrix [1.005 0; 0 0.995]
-    SD = eye(2)
+    SD = Matrix{Float64}(LinearAlgebra.I, 2, 2)
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
     mxshift = (100,100) #make sure this isn't too small
     fixed, moving = fixedmov(centered(img), tfm)
@@ -76,7 +76,7 @@ end
     tfmtest(tfm, tform)
 
     #with anisotropic sampling
-    SD = diagm([0.5; 1.0])
+    SD = Matrix(Diagonal([0.5; 1.0]))
     tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.01)*SD)
     scale = @SMatrix [1.005 0; 0 0.995]
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
