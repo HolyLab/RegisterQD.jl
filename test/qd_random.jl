@@ -14,11 +14,11 @@ using Test, TestImages
     moving = rand(50,50)
     tfm0 = Translation(-4.7, 5.1) #ground truth
     newfixed = warp(moving, tfm0)
-    itp = interpolate(newfixed, BSpline(Linear()), OnGrid())
+    itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp[indices(moving)...] #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
-    mxshift = [10;10]
+    mxshift = (10,10)
 
     tfm, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, thresh=thresh, rtol=0)
 
@@ -28,11 +28,11 @@ using Test, TestImages
     moving = rand(30,30,30)
     tfm0 = Translation(-0.9, 2.1,1.2) #ground truth
     newfixed = warp(moving, tfm0)
-    itp = interpolate(newfixed, BSpline(Linear()), OnGrid())
+    itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp[indices(moving)...] #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
-    mxshift = [5;5;5]
+    mxshift = (5,5,5)
 
     tfm, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, thresh=thresh, rtol=0)
 
@@ -43,16 +43,16 @@ using Test, TestImages
     moving = centered(rand(50,50))
     tfm0 = Translation(-4.0, 5.0) ∘ LinearMap(RotMatrix(pi/360)) #ground truth
     newfixed = warp(moving, tfm0)
-    itp = interpolate(newfixed, BSpline(Linear()), OnGrid())
+    itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp[indices(moving)...] #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
-    mxshift = [10;10]
+    mxshift = (10,10)
     mxrot = pi/90
     minwidth_rot = [0.0002]
-    SD = eye(ndims(fixed))
+    SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
-    tfm, mm = qd_rigid(centered(fixed), moving, mxshift, mxrot, minwidth_rot, SD; thresh=thresh, maxevals=1000, rtol=0, fvalue=1e-8)
+    tfm, mm = qd_rigid(fixed, moving, mxshift, mxrot, minwidth_rot, SD; thresh=thresh, maxevals=1000, rtol=0, fvalue=1e-8)
 
     @test sum(abs.(tfm0.linear - tfm.linear)) < 1e-3
 
@@ -60,16 +60,16 @@ using Test, TestImages
     moving = centered(rand(30,30,30))
     tfm0 = Translation(-1.0, 2.1,1.2) ∘ LinearMap(RotXYZ(pi/360, pi/180, pi/220)) #ground truth
     newfixed = warp(moving, tfm0)
-    itp = interpolate(newfixed, BSpline(Linear()), OnGrid())
+    itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp[indices(moving)...] #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
-    mxshift = [5;5;5]
+    mxshift = (5,5,5)
     mxrot = [pi/90; pi/90; pi/90]
     minwidth_rot = fill(0.0002, 3)
-    SD = eye(ndims(fixed))
+    SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
-    tfm, mm = qd_rigid(centered(fixed), moving, mxshift, mxrot, minwidth_rot, SD; thresh=thresh, maxevals=1000, rtol=0)
+    tfm, mm = qd_rigid(fixed, moving, mxshift, mxrot, minwidth_rot, SD; thresh=thresh, maxevals=1000, rtol=0)
 
     @test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(RotXYZ(tfm.linear)[:], tfm.translation))) < 0.1
 
@@ -79,17 +79,17 @@ using Test, TestImages
     moving = centered(rand(50,50))
     shft = SArray{Tuple{2}}(rand(2).+2.0)
     #random displacement from the identity matrix
-    mat = SArray{Tuple{2,2}}(eye(2) + rand(2,2)./40 + -rand(2,2)./40)
+    mat = SArray{Tuple{2,2}}([1 0; 0 1] + rand(2,2)./40 + -rand(2,2)./40)
     tfm0 = AffineMap(mat, shft) #ground truth
     newfixed = warp(moving, tfm0)
-    itp = interpolate(newfixed, BSpline(Linear()), OnGrid())
+    itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp[indices(moving)...] #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.5 * sum(abs2.(fixed[.!(isnan.(fixed))]))
-    mxshift = [5;5]
-    SD = eye(ndims(fixed))
+    mxshift = (5,5)
+    SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
-    tfm, mm = qd_affine(centered(fixed), moving, mxshift, SD; thresh=thresh, maxevals=1500, rtol=0, fvalue=1e-6)
+    tfm, mm = qd_affine(fixed, moving, mxshift, SD; thresh=thresh, maxevals=1500, rtol=0, fvalue=1e-6)
 
     @test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(tfm.linear[:], tfm.translation))) < 0.1
 
@@ -105,11 +105,11 @@ using Test, TestImages
     #mat = SArray{Tuple{3,3}}(eye(3) + rand(3,3)./30 + -rand(3,3)./30);
     #tfm0 = AffineMap(mat, shft); #ground truth
     #newfixed = warp(moving, tfm0);
-    #inds = intersect.(indices(moving), indices(newfixed))
+    #inds = intersect.(axes(moving), axes(newfixed))
     #fixed = newfixed[inds...]
     #moving = moving[inds...]
     #thresh = 0.1 * (sum(abs2.(fixed[.!(isnan.(fixed))]))+sum(abs2.(moving[.!(isnan.(moving))])));
-    #mxshift = [10;10;10];
+    #mxshift = (10,10,10)
     #SD = eye(ndims(fixed));
 
     #tfm, mm = qd_affine(centered(fixed), centered(moving), mxshift, SD; thresh=thresh, rtol=0, fvalue=1e-4);
@@ -128,11 +128,11 @@ using Test, TestImages
     ##tfm0 = recenter(tfm00, center(moving)); #ground truth
     #tfm0 = tfm00 #ground truth
     #newfixed = warp(moving, tfm0);
-    #inds = intersect.(indices(moving), indices(newfixed))
+    #inds = intersect.(axes(moving), axes(newfixed))
     #fixed = newfixed[inds...]
     #moving = moving[inds...]
     #thresh = 0.5 * sum(abs2.(fixed[.!(isnan.(fixed))]));
-    #mxshift = [5;5;5];
+    #mxshift = (5,5,5)
     #SD = eye(ndims(fixed));
     #@test RegisterOptimize.aff(vcat(tfm00.translation[:], tfm00.linear[:]), fixed, SD) == tfm0
 
