@@ -5,6 +5,7 @@ using RegisterMismatch
 using RegisterCore #just for indmin_mismatch?
 using Rotations
 using Interpolations, CenterIndexedArrays, StaticArrays
+using LinearAlgebra
 
 include("util.jl")
 include("translations.jl")
@@ -14,7 +15,7 @@ include("affine.jl")
 
 export qd_translate,
         qd_rigid,
-        qd_affine,
+        qd_affine
         #grid_rotations,
         #rotation_gridsearch
 
