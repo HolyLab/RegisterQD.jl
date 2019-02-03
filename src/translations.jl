@@ -50,11 +50,11 @@ with non-zero `thresh`, it is not permissible to "align" the images by shifting 
 function qd_translate(fixed, moving, mxshift;
                       thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                       initial_tfm=IdentityTransformation(),
-                      minwidth=fill(0.01, ndims(fixed)), kwargs...)
+                      minwidth=fill(0.01, ndims(fixed)), print_interval=100, kwargs...)
     fixed, moving = float(fixed), float(moving)
-    print("Running coarse step\n")
+    print_interval < typemax(Int) && print("Running coarse step\n")
     best_shft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity, initial_tfm=initial_tfm)
     tfm_coarse = initial_tfm ∘ Translation(best_shft)
-    print("Running fine step\n")
-    return qd_translate_fine(fixed, moving; initial_tfm=tfm_coarse, thresh=thresh, minwidth=minwidth, kwargs...)
+    print_interval < typemax(Int) && print("Running fine step\n")
+    return qd_translate_fine(fixed, moving; initial_tfm=tfm_coarse, thresh=thresh, minwidth=minwidth, print_interval=print_interval, kwargs...)
 end

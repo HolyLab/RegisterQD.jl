@@ -142,3 +142,21 @@ using Test, TestImages
     #@test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(tfm.linear[:], tfm.translation))) < 0.1
 
 end #tests with random images
+
+@testset "Suppression of printing" begin
+    a, b = rand(5, 5), rand(5, 5)
+    ca, cb = centered(a), centered(b)
+    mxshift = (2,2)
+    mxrot = 0.5
+    minwidth_rot = 1e-3
+    mktemp() do path, io
+        redirect_stdout(io) do
+            qd_translate(a, b, (2,2); print_interval=typemax(Int))
+            qd_rigid(ca, cb, mxshift, mxrot, minwidth_rot; print_interval=typemax(Int))
+            qd_affine(ca, cb, mxshift; print_interval=typemax(Int))
+        end
+        flush(io)
+        str = read(path, String)
+        @test isempty(str)
+    end
+end
