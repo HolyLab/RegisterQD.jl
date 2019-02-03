@@ -5,6 +5,8 @@ os:
   - osx
 julia:
   - 0.7
+  - 1.0
+  - 1.1
   - nightly
 notifications:
   email: false
@@ -23,8 +25,20 @@ matrix:
 #  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
 
 ## uncomment the following lines to override the default test script
-#script:
-#  - julia -e 'import Pkg; Pkg.build(); Pkg.test(; coverage=true)'
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia -e 'using Pkg, LibGit2;
+              user_regs = joinpath(DEPOT_PATH[1],"registries");
+              mkpath(user_regs);
+              all_registries = Dict("General" => "https://github.com/JuliaRegistries/General.git",
+                            "HolyLabRegistry" => "git@github.com:HolyLab/HolyLabRegistry.git");
+              Base.shred!(LibGit2.CachedCredentials()) do creds
+                for (reg, url) in all_registries
+                  path = joinpath(user_regs, reg);
+                  LibGit2.with(Pkg.GitTools.clone(url, path; header = "registry $reg from $(repr(url))", credentials = creds)) do repo end
+                end
+              end'
+  - julia -e 'using Pkg; Pkg.build(); Pkg.test("RegisterQD"; coverage=false)'
 
 after_success:
   # push coverage results to Codecov
