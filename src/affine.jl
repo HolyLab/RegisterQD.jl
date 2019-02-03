@@ -102,19 +102,20 @@ overlap between the two images; with non-zero `thresh`, it is not permissible to
 function qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=Matrix(1.0*I,ndims(fixed),ndims(fixed));
                    thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
+                   print_interval=100,
                    kwargs...)
     fixed, moving = float(fixed), float(moving)
     linmins = [linmins...]
     linmaxs = [linmaxs...]
-    print("Running coarse step\n")
+    print_interval < typemax(Int) && print("Running coarse step\n")
     mw = default_lin_minwidths(moving)
     tfm_coarse, mm_coarse = qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs, SD;
-                                             minwidth=mw, initial_tfm=initial_tfm, thresh=thresh, kwargs...)
-    print("Running fine step\n")
+                                             minwidth=mw, initial_tfm=initial_tfm, thresh=thresh, print_interval=print_interval, kwargs...)
+    print_interval < typemax(Int) && print("Running fine step\n")
     mw = mw./100
     linmins, linmaxs = scalebounds(linmins, linmaxs, 0.5)
     final_tfm, final_mm = qd_affine_fine(fixed, moving, linmins, linmaxs, SD;
-                                         minwidth_mat=mw, initial_tfm=tfm_coarse, thresh=thresh, kwargs...)
+                                         minwidth_mat=mw, initial_tfm=tfm_coarse, thresh=thresh, print_interval=print_interval, kwargs...)
     return final_tfm, final_mm
 end
 

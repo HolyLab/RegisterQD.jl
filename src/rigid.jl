@@ -107,12 +107,13 @@ If you have a good initial guess at the solution, pass it with the `initial_tfm`
 function qd_rigid(fixed, moving, mxshift, mxrot, minwidth_rot, SD=Matrix(1.0*I, ndims(fixed), ndims(fixed));
                   thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                   initial_tfm=IdentityTransformation(),
+                  print_interval=100,
                   kwargs...)
     fixed, moving = float(fixed), float(moving)
     mxrot = [mxrot...]
-    print("Running coarse step\n")
-    tfm_coarse, mm_coarse = qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot, SD; initial_tfm=initial_tfm, thresh=thresh, kwargs...)
-    print("Running fine step\n")
-    final_tfm, mm_fine = qd_rigid_fine(fixed, moving, mxrot./2, minwidth_rot, SD; initial_tfm=tfm_coarse, thresh=thresh, kwargs...)
+    print_interval < typemax(Int) && print("Running coarse step\n")
+    tfm_coarse, mm_coarse = qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot, SD; initial_tfm=initial_tfm, thresh=thresh, print_interval=print_interval, kwargs...)
+    print_interval < typemax(Int) && print("Running fine step\n")
+    final_tfm, mm_fine = qd_rigid_fine(fixed, moving, mxrot./2, minwidth_rot, SD; initial_tfm=tfm_coarse, thresh=thresh, print_interval=print_interval, kwargs...)
     return final_tfm, mm_fine
 end
