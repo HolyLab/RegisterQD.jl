@@ -41,13 +41,13 @@ function grid_rotations(maxradians, rgridsz, SD)
     for ra in rotation_angles
         if nd > 2
             euler_rots = map(x->tformrotate(x...), zip(axs, ra))
-            rot = foldr(*, tfeye, euler_rots)
+            rot = foldr(∘, euler_rots, init=tfeye)
         elseif nd == 2
             rot = tformrotate(ra)
         else
             error("Unsupported dimensionality")
         end
-        push!(output, AffineMap(SD*rot.scalefwd/SD , zeros(nd))) #account for sample spacing
+        push!(output, AffineMap(SD*rot.linear/SD , zeros(nd))) #account for sample spacing
     end
     return output
 end
@@ -67,7 +67,7 @@ function rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz, SD = 
     @assert nd == ndims(fixed)
     rots = grid_rotations(maxradians, rgridsz, SD)
     best_mm = Inf
-    best_rot = tformeye(ndims(moving))
+    best_rot = tformeye(nd)
     best_shift = zeros(nd)
     for rot in rots
         new_moving = transform(moving, rot)
@@ -83,5 +83,5 @@ function rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz, SD = 
             best_shift = [best_i.I...]
         end
     end
-    return tformtranslate(best_shift) * best_rot, best_mm
+    return tformtranslate(best_shift) ∘ best_rot, best_mm
 end
