@@ -5,7 +5,7 @@ using RegisterMismatch
 using RegisterCore #just for indmin_mismatch?
 using RegisterDeformation
 using Rotations
-using Interpolations, CenterIndexedArrays, StaticArrays
+using Interpolations, CenterIndexedArrays, StaticArrays, OffsetArrays
 using LinearAlgebra
 
 include("util.jl")

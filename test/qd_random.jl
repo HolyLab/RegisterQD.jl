@@ -24,6 +24,10 @@ using Test, TestImages
 
     @test sum(abs.(tfm0.translation - tfm.translation)) < 1e-3
 
+    #again with cropping
+    tfm, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, thresh=thresh, crop=true, rtol=0)
+    @test sum(abs.(tfm0.translation - tfm.translation)) < 1e-3
+
     #3D
     moving = rand(30,30,30)
     tfm0 = Translation(-0.9, 2.1,1.2) #ground truth
