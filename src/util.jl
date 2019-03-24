@@ -1,16 +1,18 @@
-function warp_and_intersect(moving, fixed, tfm)
-    if tfm == IdentityTransformation()
-        if axes(moving) == axes(fixed)
-            return moving, fixed
-        end
-    else
-        moving = warp(moving, tfm)
+function warp_and_intersect(moving, fixed, tfm::IdentityTransformation)
+    if axes(moving) == axes(fixed)
+        return moving, fixed
     end
     inds = intersect.(axes(moving), axes(fixed))
     #TODO: use views after BlockRegistration #83 on Github is addressed
     return moving[inds...], fixed[inds...]
 end
 
+function warp_and_intersect(moving, fixed, tfm)
+    moving = warp(moving, tfm)
+    inds = intersect.(axes(moving), axes(fixed))
+    #TODO: use views after BlockRegistration #83 on Github is addressed
+    return moving[inds...], fixed[inds...]
+end
 
 #Finds the best shift aligning moving to fixed, possibly after an initial transformation `initial_tfm`
 #The shift returned should be composed with initial_tfm later to create the full transform
