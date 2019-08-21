@@ -20,7 +20,7 @@ function aff(params, img::AbstractArray{T,N}, SD=Matrix(1.0*I,N,N), initial_tfm=
     offs = Float64.(params[1:N])
     mat = Float64.(params[(N+1):end])
     SD = update_SD(SD, initial_tfm)
-    mat = SD\reshape(mat,N,N)*SD
+    mat = SD\SMatrix{N,N}(reshape(mat,N,N))*SD
     return initial_tfm ∘ AffineMap(SMatrix{N,N}(mat), SVector{N}(offs))
 end
 
@@ -73,7 +73,7 @@ end
 `tform, mm = qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=I; thresh, initial_tfm, kwargs...)`
 `tform, mm = qd_affine(fixed, moving, mxshift, SD=I; thresh, initial_tfm, kwargs...)`
 optimizes an affine transformation (linear map + translation) to minimize the mismatch between `fixed` and
-`moving` using the QuadDIRECT algorithm.  The algorithm is run twice: the first step samples the search space 
+`moving` using the QuadDIRECT algorithm.  The algorithm is run twice: the first step samples the search space
 at a coarser resolution than the second.  `kwargs...` may contain any keyword argument that can be passed to
 `QuadDIRECT.analyze`. It's recommended that you pass your own stopping criteria when possible
 (i.e. `rtol`, `atol`, and/or `fvalue`).  If you provide `rtol` and/or `atol` they will apply only to the
@@ -96,7 +96,7 @@ It's recommended that you pass your own stopping criteria when possible (i.e. `r
 If you have a good initial guess at the solution, pass it with the `initial_tfm` kwarg to jump-start the search.
 
 Use `SD` if your axes are not uniformly sampled, for example `SD = diagm(voxelspacing)` where `voxelspacing`
-is a vector encoding the spacing along all axes of the image. `thresh` enforces a certain amount of sum-of-squared-intensity 
+is a vector encoding the spacing along all axes of the image. `thresh` enforces a certain amount of sum-of-squared-intensity
 overlap between the two images; with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
 """
 function qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=Matrix(1.0*I,ndims(fixed),ndims(fixed));
