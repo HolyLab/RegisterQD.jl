@@ -3,25 +3,67 @@ function warp_and_intersect(moving, fixed, tfm::IdentityTransformation)
         return moving, fixed
     end
     inds = intersect.(axes(moving), axes(fixed))
-    #TODO: use views after BlockRegistration #83 on Github is addressed
-    return moving[inds...], fixed[inds...]
+    return view(moving, inds...), view(fixed, inds...)
 end
 
 function warp_and_intersect(moving, fixed, tfm)
     moving = warp(moving, tfm)
     inds = intersect.(axes(moving), axes(fixed))
-    #TODO: use views after BlockRegistration #83 on Github is addressed
-    return moving[inds...], fixed[inds...]
+    return view(moving, inds...), view(fixed, inds...)
 end
 
-#Finds the best shift aligning moving to fixed, possibly after an initial transformation `initial_tfm`
-#The shift returned should be composed with initial_tfm later to create the full transform
+"""
+    I, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity, initial_tfm=IdentityTransformation())
+
+Find the best shift `I` (expressed as a tuple) aligning `moving` to `fixed`,
+possibly after an initial transformation `initial_tfm` applied to `moving`.
+`mm` is the sum-of-square errors at shift `I`.
+`mxshift` represents the maximum allowed shift, in pixels.
+`thresh` is a threshold on the minimum allowed overlap between `fixed` and the shifted `moving`,
+expressed in pixels if `normalization=:pixels` and in sum-of-squared-intensity if `normalization=:intensity`.
+
+One can compute an overall transformation by composing `initial_tfm` with the returned shift `I`.
+"""
 function best_shift(fixed, moving, mxshift, thresh; normalization=:intensity, initial_tfm=IdentityTransformation())
     moving, fixed = warp_and_intersect(moving, fixed, initial_tfm)
     mms = mismatch(fixed, moving, mxshift; normalization=normalization)
     best_i = indmin_mismatch(mms, thresh)
-    return best_i.I, ratio(mms[best_i], 0.0, Inf)
+    mm = mms[best_i]
+    return best_i.I, ratio(mm, thresh, typemax(eltype(mm)))
 end
+
+"""
+    itfm = arrayscale(ptfm, SD)
+
+Convert the physical-space transformation `ptfm` into one, `itfm`, that operates on index-space
+for arrays.
+For example, suppose `ptfm` is a pure 3d rotation, but you want to apply it to an array
+in which the sampling along the three axes is (0.5mm, 0.5mm, 2mm). Then by setting
+`SD = Diagonal(SVector(1, 1, 4))` (the ratio of scales along each axis),
+one obtains an `itfm` suitable for warping the array.
+
+Any translational component of `ptfm` is interpreted in physical-space units, not index-units.
+
+`SD` does not even have to be diagonal, if the array sampling is skewed.
+The columns of `SD` should correspond to the physical-coordinate displacement
+achieved by shifting by one array element along each axis of the array.
+Specifically, `SD[:,j]` should be the physical displacement of one array voxel along dimension `j`.
+"""
+arrayscale(ptfm::AbstractAffineMap, SD::AbstractMatrix) =
+    arrayscale(ptfm, LinearMap(SD))
+
+arrayscale(ptfm::AbstractAffineMap, scale::LinearMap) =
+    inv(scale) ∘ ptfm ∘ scale
+
+"""
+    pt = pscale(it, SD)
+
+Convert an index-scaled translation `it` into a physical-space translation `pt`.
+See [`arrayscale`](@ref) for more information.
+"""
+pscale(t::Translation, SD::AbstractMatrix) = pscale(t, LinearMap(SD))
+pscale(t::Translation, scale::LinearMap) = Translation(scale(t.translation))
+
 
 #returns new minbounds and maxbounds with range sizes change by fac
 function scalebounds(minb, maxb, fac::Real)
@@ -66,6 +108,25 @@ function default_lin_minwidths(img::AbstractArray{T,N}; dmin=1e-5, ndmin=1e-5) w
         mat[i,i] = abs(dmin)
     end
     return mat[:]
+end
+
+function default_minwidth_rot(I::CartesianIndices{2}, SD; d=0.1)
+    θ = Inf
+    T = SD \ (@SMatrix([0 -1; 1 0]) * SD)  # I + [0 -Δθ; Δθ 0] is a rotmtrx for infinitesimal Δθ
+    for c in CornerIterator(I)
+        Δc = T*SVector(Tuple(c))
+        for dc in Δc
+            θ = min(θ, d/dc)
+        end
+    end
+    return (θ,)
+end
+
+function default_minwidth_rot(I::CartesianIndices{3}, SD; d=0.1)
+    slice2d(I, i1, i2) = CartesianIndices((I.indices[i1], I.indices[i2]))
+    return (default_minwidth_rot(slice2d(I, 2, 3), SD[2:3, 2:3]; d=d),
+            default_minwidth_rot(slice2d(I, 1, 3), SD[[1,3], [1,3]]; d=d),
+            default_minwidth_rot(slice2d(I, 1, 2), SD[1:2, 1:2]; d=d))
 end
 
 #sets splits based on lower and upper bounds
