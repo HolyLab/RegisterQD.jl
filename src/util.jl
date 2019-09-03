@@ -116,7 +116,7 @@ function default_minwidth_rot(I::CartesianIndices{2}, SD; d=0.1)
     for c in CornerIterator(I)
         Δc = T*SVector(Tuple(c))
         for dc in Δc
-            θ = min(θ, d/dc)
+            θ = min(θ, abs(d/dc))
         end
     end
     return (θ,)
