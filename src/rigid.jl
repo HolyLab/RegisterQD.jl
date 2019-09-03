@@ -176,7 +176,7 @@ function qd_rigid(fixed, moving, mxshift, mxrot, SD=I;
     mxrot = [mxrot...]
     print_interval < typemax(Int) && print("Running coarse step\n")
     tfm_coarse, mm_coarse = qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot, SD; initial_tfm=initial_tfm, thresh=thresh, print_interval=print_interval, kwargs...)
-    print_interval < typemax(Int) && print("Obtained mismatch $mm_coards from coarse step, running fine step\n")
+    print_interval < typemax(Int) && print("Obtained mismatch $mm_coarse from coarse step, running fine step\n")
     final_tfm, mm_fine = qd_rigid_fine(fixed, moving, mxrot./2, minwidth_rot, SD; initial_tfm=tfm_coarse, thresh=thresh, print_interval=print_interval, kwargs...)
     return final_tfm, mm_fine
 end
