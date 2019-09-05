@@ -47,7 +47,7 @@ end
     mxshift = (100,100) #make sure this isn't too small
     tform, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, rtol=0, fvalue=0.0003)
     tfmtest(tfm, tform)
-    
+
     #Rigid transform
     SD = Matrix{Float64}(LinearAlgebra.I, 2, 2)
     tfm = Translation(@SVector([14, 17]))∘LinearMap(RotMatrix(0.3)) #no distortion for now
@@ -55,14 +55,14 @@ end
     mxshift = (100,100) #make sure this isn't too small
     mxrot = (0.5,)
     minwidth_rot = fill(0.002, 3)
-    tform, mm = qd_rigid(centered(fixed), centered(moving), mxshift, mxrot, minwidth_rot, SD; maxevals=1000, rtol=0, fvalue=0.0002)
+    tform, mm = qd_rigid(centered(fixed), centered(moving), mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, tform)
     #with anisotropic sampling
     SD = Matrix(Diagonal([0.5; 1.0]))
     tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.3)*SD)
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_rigid(centered(fixed), centered(moving), mxshift, mxrot, minwidth_rot, SD; maxevals=1000, rtol=0, fvalue=0.0002)
-    tfmtest(tfm, tform)
+    tform, mm = qd_rigid(centered(fixed), centered(moving), mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002)
+    tfmtest(tfm, arrayscale(tform, SD))
 
     #Affine transform
     tfm = Translation(@SVector([14, 17]))∘LinearMap(RotMatrix(0.01))

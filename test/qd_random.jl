@@ -56,7 +56,7 @@ using Test, TestImages
     minwidth_rot = [0.0002]
     SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
-    tfm, mm = qd_rigid(fixed, moving, mxshift, mxrot, minwidth_rot, SD; thresh=thresh, maxevals=1000, rtol=0, fvalue=1e-8)
+    tfm, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, thresh=thresh, maxevals=1000, rtol=0, fvalue=1e-8)
 
     @test sum(abs.(tfm0.linear - tfm.linear)) < 1e-3
 
@@ -73,7 +73,7 @@ using Test, TestImages
     minwidth_rot = fill(0.0002, 3)
     SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
-    tfm, mm = qd_rigid(fixed, moving, mxshift, mxrot, minwidth_rot, SD; thresh=thresh, maxevals=1000, rtol=0)
+    tfm, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, thresh=thresh, maxevals=1000, rtol=0)
 
     @test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(RotXYZ(tfm.linear)[:], tfm.translation))) < 0.1
 
@@ -120,7 +120,7 @@ using Test, TestImages
 
     #@test mm <= 1e-4
     #@test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(tfm.linear[:], tfm.translation))) < 0.1
-    
+
     #not random
     #moving = zeros(10,10,10);
     #moving[5:7, 5:7, 5:7] = 1.0
@@ -156,7 +156,7 @@ end #tests with random images
     mktemp() do path, io
         redirect_stdout(io) do
             qd_translate(a, b, (2,2); print_interval=typemax(Int))
-            qd_rigid(ca, cb, mxshift, mxrot, minwidth_rot; print_interval=typemax(Int))
+            qd_rigid(ca, cb, mxshift, mxrot; print_interval=typemax(Int))
             qd_affine(ca, cb, mxshift; print_interval=typemax(Int))
         end
         flush(io)
