@@ -110,24 +110,56 @@ function default_lin_minwidths(img::AbstractArray{T,N}; dmin=1e-5, ndmin=1e-5) w
     return mat[:]
 end
 
-function default_minwidth_rot(I::CartesianIndices{2}, SD; d=0.1)
-    θ = Inf
-    T = SD \ (@SMatrix([0 -1; 1 0]) * SD)  # I + [0 -Δθ; Δθ 0] is a rotmtrx for infinitesimal Δθ
-    for c in CornerIterator(I)
-        Δc = T*SVector(Tuple(c))
-        for dc in Δc
-            θ = min(θ, abs(d/dc))
-        end
+"""
+    θ = default_minrot(ci::CartesianIndices, SD=I; Δc=0.1)
+
+Compute the rotation `θ` that results in largest change in coordinates
+of size `Δc` (in pixels) for any index in `ci`.
+"""
+function default_minrot(ci::CartesianIndices, SD=I; Δc=0.1)
+    L = -Inf
+    for x in CornerIterator(ci)
+        x′ = SD*SVector(Tuple(x))  # position of corner point in physical space
+        L = max(L, norm(x′))
     end
-    return (θ,)
+    S2 = SD'*SD
+    if SD == I
+        λ = 1
+    else
+        F = eigen(S2)
+        λ = minimum(F.values)
+    end
+    ℓ = sqrt(λ)*Δc
+    return 2*asin(ℓ/(2*L))
 end
 
-function default_minwidth_rot(I::CartesianIndices{3}, SD; d=0.1)
-    slice2d(I, i1, i2) = CartesianIndices((I.indices[i1], I.indices[i2]))
-    return (default_minwidth_rot(slice2d(I, 2, 3), SD[2:3, 2:3]; d=d),
-            default_minwidth_rot(slice2d(I, 1, 3), SD[[1,3], [1,3]]; d=d),
-            default_minwidth_rot(slice2d(I, 1, 2), SD[1:2, 1:2]; d=d))
+default_minwidth_rot(ci::CartesianIndices{2}, SD=I; kwargs...) =
+    [default_minrot(ci, SD; kwargs...)]
+function default_minwidth_rot(ci::CartesianIndices{3}, SD=I; kwargs...)
+    θ = default_minrot(ci, SD; kwargs...)
+    return [θ, θ, θ]
 end
+
+#     θ = Inf
+#     # R = I + [0 -Δθ; Δθ 0] is a rotmtrx for infinitesimal Δθ
+#     # `dRdθ` is the "slope" of the rotation, which allows us to compute
+#     # the
+#     dRdθ = SD \ (@SMatrix([0 -1; 1 0]) * SD)
+#     for c in CornerIterator(ci)
+#         dcdθs = dRdθ*SVector(Tuple(c))
+#         for dcdθ in dcdθs
+#             θ = min(θ, abs(Δc/dcdθ))
+#         end
+#     end
+#     return (θ,)
+# end
+
+# function default_minwidth_rot(I::CartesianIndices{3}, SD; d=0.1)
+#     slice2d(I, i1, i2) = CartesianIndices((I.indices[i1], I.indices[i2]))
+#     return (default_minwidth_rot(slice2d(I, 2, 3), SD[2:3, 2:3]; d=d)...,
+#             default_minwidth_rot(slice2d(I, 1, 3), SD[[1,3], [1,3]]; d=d)...,
+#             default_minwidth_rot(slice2d(I, 1, 2), SD[1:2, 1:2]; d=d)...)
+# end
 
 #sets splits based on lower and upper bounds
 function _analyze(f, lower, upper; kwargs...)
