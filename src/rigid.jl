@@ -1,7 +1,7 @@
 update_SD(SD, tfm::Union{LinearMap, AffineMap}) = update_SD(SD, tfm.linear)
 update_SD(SD, tfm::Transformation) = SD
 #update_SD(SD::AbstractArray, m::StaticArray) = update_SD(SD, Array(m))
-update_SD(SD::AbstractArray, m::AbstractArray) = m\SD*m
+update_SD(SD::AbstractArray, m::AbstractArray) = m\SD*m #TODO found our problem. Why was it written like this?
 
 #rotation only
 function rot(theta, img::AbstractArray{T,2}, SD=I) where {T}
@@ -17,7 +17,7 @@ function rot(thetas, img::AbstractArray{T,3}, SD=I) where {T}
     SDS = SMatrix{3,3}(SD)
     rotm = SDS\rotm*SDS
     return LinearMap(SMatrix{3,3}(rotm))
-end
+end #TODO img doesn't seem to be used???
 
 #rotation + shift, fast because it uses fourier method for shift
 function rigid_mm_fast(theta, mxshift, fixed, moving, thresh, SD; initial_tfm=IdentityTransformation())
@@ -38,6 +38,7 @@ function tfmrigid(params, img::AbstractArray{T,3}, SD=Matrix(1.0*I,3,3)) where {
     length(params) == 6 || throw(DimensionMismatch("expected 6 parameters, got $(length(params))"))
     dx, dy, dz, θx, θy, θz =  params
     rt = rot((θx, θy, θz), img, SD)
+    #@show SD # TODO SD is warping
     return Translation(dx, dy, dz) ∘ rt
 end
 #rotation + shift, slow because it warps for every rotation and shift
@@ -59,7 +60,7 @@ function qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot, SD;
     root_coarse, x0coarse = _analyze(f, lower, upper;
                                      minwidth=minwidth_rot, print_interval=100, maxevals=5e4, kwargs..., atol=0, rtol=1e-3)
     box_coarse = minimum(root_coarse)
-    tfmcoarse0 = initial_tfm ∘ rot(position(box_coarse, x0coarse), moving, update_SD(SD, initial_tfm))
+    tfmcoarse0 = initial_tfm ∘ rot(position(box_coarse, x0coarse), moving, update_SD(SD, initial_tfm)) #why is this second one a valid rotation?
     best_shft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity, initial_tfm=tfmcoarse0)
     tfmcoarse = tfmcoarse0 ∘ Translation(best_shft)
     return tfmcoarse, mm
@@ -78,8 +79,13 @@ function qd_rigid_fine(fixed, moving, mxrot, minwidth_rot, SD;
     minwidth = vcat(minwidth_shfts, minwidth_rot)
     root, x0 = _analyze(f, lower, upper; minwidth=minwidth, print_interval=100, maxevals=5e4, kwargs...)
     box = minimum(root)
+    # @show isrotation(SD*initial_tfm.linear*inv(SD))
+    # @show isrotation(SD*tfmrigid(position(box, x0), moving, update_SD(SD, initial_tfm)).linear*inv(SD))
     tfmfine = initial_tfm ∘ tfmrigid(position(box, x0), moving, update_SD(SD, initial_tfm))
-    return tfmfine, value(box)
+    #TODO change this to just SD instead of update SD? the analyze function may still be off.
+    # tfmfine = initial_tfm ∘ tfmrigid(position(box, x0), moving, SD)
+    # @show isrotation(SD*tfmfine.linear*inv(SD))
+    return tfmfine, value(box), root, x0, box, update_SD(SD, initial_tfm), tfmrigid(position(box, x0), moving, update_SD(SD, initial_tfm))
 end
 
 """
