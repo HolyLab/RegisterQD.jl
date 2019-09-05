@@ -151,8 +151,9 @@ If you later want to apply the returned transform to an image you must remember 
 on that image as well.  Alternatively you can re-encode the transformation in terms of a
 different origin by calling `recenter(tform, newctr)` where `newctr` is the displacement of the new center from the old center.
 
-Use `SD` if your axes are not uniformly sampled, for example `SD = diagm(voxelspacing)` where `voxelspacing`
-is a vector encoding the spacing along all axes of the image.
+Use `SD` ("spatial displacements") if your axes are not uniformly sampled, for example
+`SD = diagm(voxelspacing)` where `voxelspacing` is a vector encoding the spacing along all axes
+of the image.
 See [`arrayscale`](@ref) for more information about `SD`.
 
 `thresh` enforces a certain amount of sum-of-squared-intensity overlap between
@@ -166,7 +167,8 @@ Both the output `tfm` and any `initial_tfm` are represented in *physical* coordi
 as long as `initial_tfm` is a rigid transformation, `tfm` will be a pure rotation+translation.
 If `SD` is not the identity, use `arrayscale` before applying the result to `moving`.
 """
-function qd_rigid(fixed, moving, mxshift, mxrot, SD=I;
+function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike};
+                  SD::AbstractMatrix=I,
                   minwidth_rot=default_minwidth_rot(CartesianIndices(fixed), SD),
                   thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                   initial_tfm=IdentityTransformation(),
