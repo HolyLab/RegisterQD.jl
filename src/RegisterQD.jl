@@ -8,6 +8,8 @@ using Rotations
 using Interpolations, CenterIndexedArrays, StaticArrays, OffsetArrays
 using LinearAlgebra
 
+using Images.ImageTransformations: CornerIterator
+
 const VecLike = Union{AbstractVector{<:Number}, Tuple{Number, Vararg{Number}}}
 
 include("util.jl")
