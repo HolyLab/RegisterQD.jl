@@ -42,7 +42,7 @@ end
 @testset "QuadDIRECT tests with standard images" begin
     img = testimage("cameraman");
 
-    #Translation (subpixel)
+#Translation (subpixel)
     tfm = Translation(@SVector([14.3, 17.6]))
     fixed, moving = fixedmov(img, tfm)
     mxshift = (100,100) #make sure this isn't too small
@@ -73,7 +73,7 @@ end
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
     mxshift = (100,100) #make sure this isn't too small
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_affine(fixed, moving, mxshift, SD; maxevals=1000, rtol=0, fvalue=0.0002)
+    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, tform)
 
     #with anisotropic sampling
@@ -82,6 +82,6 @@ end
     scale = @SMatrix [1.005 0; 0 0.995]
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_affine(fixed, moving, mxshift, SD; maxevals=1000, rtol=0, fvalue=0.0002)
+    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, tform)
 end #tests with standard images

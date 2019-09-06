@@ -14,3 +14,6 @@
     θ = RegisterQD.default_minrot(ci)
     @test θ ≈ 0.1/sqrt(3^2 + 10^2 + 5^2) rtol=1e-3
 end
+
+#TODO add a testset for other support functions
+#rotations

@@ -37,4 +37,14 @@ function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike},
     """)
 end
 
+function qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD;
+                   thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                   initial_tfm=IdentityTransformation(),
+                   print_interval=100,
+                   kwargs...)
+           error("""
+           `qd_affine` has a new syntax, see the help (`?qd_affine`).
+           """)
+end #ad_affine
+
 end # module
