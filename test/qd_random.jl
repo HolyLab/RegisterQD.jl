@@ -93,7 +93,7 @@ using Test, TestImages
     mxshift = (5,5)
     SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
-    tfm, mm = qd_affine(fixed, moving, mxshift, SD; thresh=thresh, maxevals=1500, rtol=0, fvalue=1e-6)
+    tfm, mm = qd_affine(fixed, moving, mxshift; SD=SD, thresh=thresh, maxevals=1500, rtol=0, fvalue=1e-6)
 
     @test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(tfm.linear[:], tfm.translation))) < 0.1
 
@@ -152,7 +152,7 @@ end #tests with random images
     ca, cb = centered(a), centered(b)
     mxshift = (2,2)
     mxrot = 0.5
-    minwidth_rot = 1e-3
+    # minwidth_rot = 1e-3
     mktemp() do path, io
         redirect_stdout(io) do
             qd_translate(a, b, (2,2); print_interval=typemax(Int))

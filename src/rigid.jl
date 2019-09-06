@@ -81,7 +81,8 @@ function rigid_mm_slow(params, fixed, moving, thresh, SD; initial_tfm=IdentityTr
     return ratio(mm, thresh, Inf)
 end
 
-function qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot, SD;
+function qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot;
+                         SD=diagm(ones(ndims(fixed))),
                          initial_tfm=IdentityTransformation(),
                          thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                          kwargs...)
@@ -98,7 +99,8 @@ function qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot, SD;
     return tfmcoarse, mm
 end
 
-function qd_rigid_fine(fixed, moving, mxrot, minwidth_rot, SD;
+function qd_rigid_fine(fixed, moving, mxrot, minwidth_rot;
+                       SD=diagm(ones(ndims(fixed))),
                        initial_tfm=IdentityTransformation(),
                        thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                        kwargs...)
@@ -168,17 +170,22 @@ as long as `initial_tfm` is a rigid transformation, `tfm` will be a pure rotatio
 If `SD` is not the identity, use `arrayscale` before applying the result to `moving`.
 """
 function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike};
-                  SD::AbstractMatrix=I,
+                  SD=diagm(ones(ndims(fixed))),
                   minwidth_rot=default_minwidth_rot(CartesianIndices(fixed), SD),
                   thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                   initial_tfm=IdentityTransformation(),
                   print_interval=100,
                   kwargs...)
+    #TODO make sure isrotation(initial_tfm.linear) returns true, else throw a warning and an option to terminate? do I still allow the main block to run?
+    if initial_tfm == IdentityTransformation() || isrotation(initial_tfm.linear)
+    else
+        @show "WARNING: initial_tfm is not a rigid transformation"
+    end
     fixed, moving = float(fixed), float(moving)
     mxrot = [mxrot...]
     print_interval < typemax(Int) && print("Running coarse step\n")
-    tfm_coarse, mm_coarse = qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot, SD; initial_tfm=initial_tfm, thresh=thresh, print_interval=print_interval, kwargs...)
+    tfm_coarse, mm_coarse = qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot; SD=SD, initial_tfm=initial_tfm, thresh=thresh, print_interval=print_interval, kwargs...)
     print_interval < typemax(Int) && print("Obtained mismatch $mm_coarse from coarse step, running fine step\n")
-    final_tfm, mm_fine = qd_rigid_fine(fixed, moving, mxrot./2, minwidth_rot, SD; initial_tfm=tfm_coarse, thresh=thresh, print_interval=print_interval, kwargs...)
+    final_tfm, mm_fine = qd_rigid_fine(fixed, moving, mxrot./2, minwidth_rot; SD=SD, initial_tfm=tfm_coarse, thresh=thresh, print_interval=print_interval, kwargs...)
     return final_tfm, mm_fine
 end
