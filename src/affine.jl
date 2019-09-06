@@ -1,7 +1,7 @@
 function linmap(mat, img::AbstractArray{T,N}, SD=Matrix(1.0*I,N,N), initial_tfm=IdentityTransformation()) where {T,N}
-    mat = [mat...]
-    SD = update_SD(SD, initial_tfm)
-    mat = SD\reshape(mat, N,N)*SD
+    mat = [mat...] #TODO WHY not put dimension mismatch here instead.
+    # SD = update_SD(SD, initial_tfm)
+    mat = SD\reshape(mat, N,N)*SD #TODO this is basically arrayscale. TODO improve commenting?
     lm = LinearMap(SMatrix{N,N}(mat))
     return initial_tfm ∘ lm
 end
@@ -19,8 +19,8 @@ function aff(params, img::AbstractArray{T,N}, SD=Matrix(1.0*I,N,N), initial_tfm=
     length(params) == (N+N^2) || throw(DimensionMismatch("expected $(N+N^2) parameters, got $(length(params))"))
     offs = Float64.(params[1:N])
     mat = Float64.(params[(N+1):end])
-    SD = update_SD(SD, initial_tfm)
-    mat = SD\reshape(mat,N,N)*SD
+    # SD = update_SD(SD, initial_tfm)
+    mat = SD\reshape(mat,N,N)*SD #TODO this is basically arrayscale.
     return initial_tfm ∘ AffineMap(SMatrix{N,N}(mat), SVector{N}(offs))
 end
 
@@ -32,7 +32,8 @@ function affine_mm_slow(params, fixed, moving, thresh, SD; initial_tfm=IdentityT
     return ratio(mm, thresh, Inf)
 end
 
-function qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs, SD;
+function qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs;
+                            SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
                           initial_tfm=IdentityTransformation(),
                           thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                           minwidth=default_lin_minwidths(moving),
@@ -46,16 +47,18 @@ function qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs, SD;
     params = position(box, x0)
     tfmcoarse0 = linmap(params, moving, SD, initial_tfm)
     best_shft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity, initial_tfm=tfmcoarse0)
+    #TODO pscale
     tfmcoarse = tfmcoarse0 ∘ Translation(best_shft)
     return tfmcoarse, mm
 end
 
-function qd_affine_fine(fixed, moving, linmins, linmaxs, SD;
+function qd_affine_fine(fixed, moving, linmins, linmaxs;
+                        SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
                         initial_tfm=IdentityTransformation(),
                         thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                         minwidth_mat=default_lin_minwidths(fixed)./10,
                         kwargs...)
-    f(x) = affine_mm_slow(x, fixed, moving, thresh, SD; initial_tfm=initial_tfm)
+    f(x) = affine_mm_slow(x, fixed, moving, thresh, SD; initial_tfm=initial_tfm) #TODO reapply linmap here.
     upper_shft = fill(2.0, ndims(fixed))
     upper = vcat(upper_shft, linmaxs)
     lower = vcat(-upper_shft, linmins)
@@ -65,7 +68,7 @@ function qd_affine_fine(fixed, moving, linmins, linmaxs, SD;
                         minwidth=minwidth, print_interval=100, maxevals=5e4, kwargs...)
     box = minimum(root)
     params = position(box, x0)
-    tfmfine = aff(params, moving, SD, initial_tfm)
+    tfmfine = aff(params, moving, SD, initial_tfm) #TODO use EYE instead of SD here?
     return tfmfine, value(box)
 end
 
@@ -73,7 +76,7 @@ end
 `tform, mm = qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=I; thresh, initial_tfm, kwargs...)`
 `tform, mm = qd_affine(fixed, moving, mxshift, SD=I; thresh, initial_tfm, kwargs...)`
 optimizes an affine transformation (linear map + translation) to minimize the mismatch between `fixed` and
-`moving` using the QuadDIRECT algorithm.  The algorithm is run twice: the first step samples the search space 
+`moving` using the QuadDIRECT algorithm.  The algorithm is run twice: the first step samples the search space
 at a coarser resolution than the second.  `kwargs...` may contain any keyword argument that can be passed to
 `QuadDIRECT.analyze`. It's recommended that you pass your own stopping criteria when possible
 (i.e. `rtol`, `atol`, and/or `fvalue`).  If you provide `rtol` and/or `atol` they will apply only to the
@@ -96,10 +99,11 @@ It's recommended that you pass your own stopping criteria when possible (i.e. `r
 If you have a good initial guess at the solution, pass it with the `initial_tfm` kwarg to jump-start the search.
 
 Use `SD` if your axes are not uniformly sampled, for example `SD = diagm(voxelspacing)` where `voxelspacing`
-is a vector encoding the spacing along all axes of the image. `thresh` enforces a certain amount of sum-of-squared-intensity 
+is a vector encoding the spacing along all axes of the image. `thresh` enforces a certain amount of sum-of-squared-intensity
 overlap between the two images; with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
 """
-function qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=Matrix(1.0*I,ndims(fixed),ndims(fixed));
+function qd_affine(fixed, moving, mxshift, linmins, linmaxs;
+                    SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
                    thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    print_interval=100,
@@ -109,20 +113,21 @@ function qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=Matrix(1.0*I,ndi
     linmaxs = [linmaxs...]
     print_interval < typemax(Int) && print("Running coarse step\n")
     mw = default_lin_minwidths(moving)
-    tfm_coarse, mm_coarse = qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs, SD;
-                                             minwidth=mw, initial_tfm=initial_tfm, thresh=thresh, print_interval=print_interval, kwargs...)
+    tfm_coarse, mm_coarse = qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs;
+                                             SD = SD, minwidth=mw, initial_tfm=initial_tfm, thresh=thresh, print_interval=print_interval, kwargs...)
     print_interval < typemax(Int) && print("Running fine step\n")
     mw = mw./100
     linmins, linmaxs = scalebounds(linmins, linmaxs, 0.5)
-    final_tfm, final_mm = qd_affine_fine(fixed, moving, linmins, linmaxs, SD;
-                                         minwidth_mat=mw, initial_tfm=tfm_coarse, thresh=thresh, print_interval=print_interval, kwargs...)
+    final_tfm, final_mm = qd_affine_fine(fixed, moving, linmins, linmaxs;
+                                         SD = SD, minwidth_mat=mw, initial_tfm=tfm_coarse, thresh=thresh, print_interval=print_interval, kwargs...)
     return final_tfm, final_mm
 end
 
-function qd_affine(fixed, moving, mxshift, SD=Matrix(1.0*I,ndims(fixed),ndims(fixed));
+function qd_affine(fixed, moving, mxshift;
+                    SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
                    thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    kwargs...)
     minb, maxb = default_linmap_bounds(fixed)
-    return qd_affine(fixed, moving, mxshift, minb, maxb, SD; thresh=thresh, initial_tfm=initial_tfm, kwargs...)
+    return qd_affine(fixed, moving, mxshift, minb, maxb; SD = SD, thresh=thresh, initial_tfm=initial_tfm, kwargs...)
 end
