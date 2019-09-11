@@ -1,3 +1,4 @@
+using ImageMagick
 using StaticArrays, Interpolations, LinearAlgebra
 using Images, CoordinateTransformations, Rotations
 using OffsetArrays
@@ -42,7 +43,7 @@ end
 @testset "QuadDIRECT tests with standard images" begin
     img = testimage("cameraman");
 
-#Translation (subpixel)
+    #Translation (subpixel)
     tfm = Translation(@SVector([14.3, 17.6]))
     fixed, moving = fixedmov(img, tfm)
     mxshift = (100,100) #make sure this isn't too small
@@ -78,10 +79,12 @@ end
 
     #with anisotropic sampling
     SD = Matrix(Diagonal([0.5; 1.0]))
-    tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.01)*SD)
+    tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(RotMatrix(0.1)) #Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.01)*SD)
     scale = @SMatrix [1.005 0; 0 0.995]
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
+    tfm = arrayscale(tfm, SD)
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=1000, rtol=0, fvalue=0.0002)
-    tfmtest(tfm, tform)
+    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=1000, rtol=0, fvalue=0.0002, ndmax = 0.25)
+    tform2 = arrayscale(tform, SD) 
+    tfmtest(tfm, tform2)
 end #tests with standard images

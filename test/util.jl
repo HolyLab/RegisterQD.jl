@@ -17,3 +17,6 @@ end
 
 #TODO add a testset for other support functions
 #rotations
+#arrayscale
+#pscale
+#restrict
