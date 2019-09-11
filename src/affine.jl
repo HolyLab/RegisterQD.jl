@@ -1,32 +1,32 @@
-function linmap(mat, img::AbstractArray{T,N}, SD=Matrix(1.0*I,N,N), initial_tfm=IdentityTransformation()) where {T,N}
-    mat = [mat...] #TODO WHY not put dimension mismatch here instead.
-    # SD = update_SD(SD, initial_tfm)
-    mat = SD\reshape(mat, N,N)*SD #TODO this is basically arrayscale. TODO improve commenting?
+#TODO more documentation?
+function linmap(mat, img::AbstractArray{T,N}, initial_tfm=IdentityTransformation()) where {T,N}
+    mat = [mat...]
+    mat = reshape(mat, N,N)
     lm = LinearMap(SMatrix{N,N}(mat))
     return initial_tfm ∘ lm
 end
 
 #here params contains parameters of a linear map
 function affine_mm_fast(params, mxshift, fixed, moving, thresh, SD; initial_tfm=IdentityTransformation())
-    tfm = linmap(params, moving, SD, initial_tfm)
+    tfm = arrayscale(linmap(params, moving, initial_tfm), SD)
     moving, fixed = warp_and_intersect(moving, fixed, tfm)
-    bshft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity)
+    bshft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity) #TODO is this broken?
     return mm
 end
 
-function aff(params, img::AbstractArray{T,N}, SD=Matrix(1.0*I,N,N), initial_tfm=IdentityTransformation()) where {T,N}
+#TODO more documentation?
+function aff(params, img::AbstractArray{T,N}, initial_tfm=IdentityTransformation()) where {T,N}
     params = [params...]
     length(params) == (N+N^2) || throw(DimensionMismatch("expected $(N+N^2) parameters, got $(length(params))"))
     offs = Float64.(params[1:N])
     mat = Float64.(params[(N+1):end])
-    # SD = update_SD(SD, initial_tfm)
-    mat = SD\reshape(mat,N,N)*SD #TODO this is basically arrayscale.
+    mat = reshape(mat,N,N)
     return initial_tfm ∘ AffineMap(SMatrix{N,N}(mat), SVector{N}(offs))
 end
 
 #here tfm contains parameters of an affine transform (linear map + shift)
 function affine_mm_slow(params, fixed, moving, thresh, SD; initial_tfm=IdentityTransformation())
-    tfm = aff(params, moving, SD, initial_tfm)
+    tfm = arrayscale(aff(params, moving, initial_tfm), SD)
     moving, fixed = warp_and_intersect(moving, fixed, tfm)
     mm = mismatch0(fixed, moving; normalization=:intensity)
     return ratio(mm, thresh, Inf)
@@ -45,10 +45,9 @@ function qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs;
                         minwidth=minwidth, print_interval=100, maxevals=5e4, kwargs..., atol=0, rtol=1e-3)
     box = minimum(root)
     params = position(box, x0)
-    tfmcoarse0 = linmap(params, moving, SD, initial_tfm)
-    best_shft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity, initial_tfm=tfmcoarse0)
-    #TODO pscale
-    tfmcoarse = tfmcoarse0 ∘ Translation(best_shft)
+    tfmcoarse0 = linmap(params, moving, initial_tfm)
+    best_shft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity, initial_tfm=arrayscale(tfmcoarse0, SD))
+    tfmcoarse = tfmcoarse0 ∘ pscale(Translation(best_shft), SD) #TODO double check the logic of this.
     return tfmcoarse, mm
 end
 
@@ -58,7 +57,7 @@ function qd_affine_fine(fixed, moving, linmins, linmaxs;
                         thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                         minwidth_mat=default_lin_minwidths(fixed)./10,
                         kwargs...)
-    f(x) = affine_mm_slow(x, fixed, moving, thresh, SD; initial_tfm=initial_tfm) #TODO reapply linmap here.
+    f(x) = affine_mm_slow(x, fixed, moving, thresh, SD; initial_tfm=initial_tfm)
     upper_shft = fill(2.0, ndims(fixed))
     upper = vcat(upper_shft, linmaxs)
     lower = vcat(-upper_shft, linmins)
@@ -68,10 +67,12 @@ function qd_affine_fine(fixed, moving, linmins, linmaxs;
                         minwidth=minwidth, print_interval=100, maxevals=5e4, kwargs...)
     box = minimum(root)
     params = position(box, x0)
-    tfmfine = aff(params, moving, SD, initial_tfm) #TODO use EYE instead of SD here?
+    tfmfine = aff(params, moving, initial_tfm)
     return tfmfine, value(box)
 end
 
+#TODO oops maybe dmax and ndax is too closely related to linmax and linmin?
+#TODO I think that this is a tad loquatious, and not enough examples. Permission to rework it?
 """
 `tform, mm = qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=I; thresh, initial_tfm, kwargs...)`
 `tform, mm = qd_affine(fixed, moving, mxshift, SD=I; thresh, initial_tfm, kwargs...)`
@@ -92,6 +93,9 @@ different origin by calling `recenter(tform, newctr)` where `newctr` is the disp
 The `linmins` and `linmaxs` arguments set the minimum and maximum allowable values in the linear map matrix.
 They can be supplied as NxN matrices or flattened vectors.  If omitted then a modest default search space is chosen.
 `mxshift` sets the magnitude of the largest allowable translation in each dimension (It's a vector of length N).
+This default search-space allows for very little rotation.
+Alternatively, you can submit `dmax` or `ndmax` values as keyword functions, which will use diagonal or non-diagonal variation from the identity matrix
+to generate less modest `linmins` and `linmaxs` arguments for you.
 
 `kwargs...` can also include any other keyword argument that can be passed to `QuadDIRECT.analyze`.
 It's recommended that you pass your own stopping criteria when possible (i.e. `rtol`, `atol`, and/or `fvalue`).
@@ -127,7 +131,8 @@ function qd_affine(fixed, moving, mxshift;
                     SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
                    thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
+                   dmax = 0.05, ndmax = 0.05,
                    kwargs...)
-    minb, maxb = default_linmap_bounds(fixed)
+    minb, maxb = default_linmap_bounds(fixed; dmax = dmax, ndmax = ndmax)
     return qd_affine(fixed, moving, mxshift, minb, maxb; SD = SD, thresh=thresh, initial_tfm=initial_tfm, kwargs...)
 end
