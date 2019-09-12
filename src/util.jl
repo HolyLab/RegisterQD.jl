@@ -55,6 +55,9 @@ arrayscale(ptfm::AbstractAffineMap, SD::AbstractMatrix) =
 arrayscale(ptfm::AbstractAffineMap, scale::LinearMap) =
     inv(scale) ∘ ptfm ∘ scale
 
+arrayscale(ptfm::AbstractAffineMap, scale::UniformScaling) = ptfm
+
+
 """
     pt = pscale(it, SD)
 
@@ -63,6 +66,7 @@ See [`arrayscale`](@ref) for more information.
 """
 pscale(t::Translation, SD::AbstractMatrix) = pscale(t, LinearMap(SD))
 pscale(t::Translation, scale::LinearMap) = Translation(scale(t.translation))
+pscale(t::Translation, scale::UniformScaling) = Translation(scale.λ*t.translation)
 
 
 #returns new minbounds and maxbounds with range sizes change by fac

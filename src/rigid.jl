@@ -82,7 +82,7 @@ function rigid_mm_slow(params, fixed, moving, thresh, SD; initial_tfm=IdentityTr
 end
 
 function qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot;
-                         SD=diagm(ones(ndims(fixed))),
+                         SD=I,
                          initial_tfm=IdentityTransformation(),
                          thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                          kwargs...)
@@ -100,7 +100,7 @@ function qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot;
 end
 
 function qd_rigid_fine(fixed, moving, mxrot, minwidth_rot;
-                       SD=diagm(ones(ndims(fixed))),
+                       SD=I,
                        initial_tfm=IdentityTransformation(),
                        thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                        kwargs...)
@@ -170,7 +170,7 @@ as long as `initial_tfm` is a rigid transformation, `tfm` will be a pure rotatio
 If `SD` is not the identity, use `arrayscale` before applying the result to `moving`.
 """
 function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike};
-                  SD=diagm(ones(ndims(fixed))),
+                  SD=I,
                   minwidth_rot=default_minwidth_rot(CartesianIndices(fixed), SD),
                   thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                   initial_tfm=IdentityTransformation(),

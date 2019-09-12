@@ -33,7 +33,7 @@ function affine_mm_slow(params, fixed, moving, thresh, SD; initial_tfm=IdentityT
 end
 
 function qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs;
-                            SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
+                          SD=I,
                           initial_tfm=IdentityTransformation(),
                           thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                           minwidth=default_lin_minwidths(moving),
@@ -52,7 +52,7 @@ function qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs;
 end
 
 function qd_affine_fine(fixed, moving, linmins, linmaxs;
-                        SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
+                        SD=I,
                         initial_tfm=IdentityTransformation(),
                         thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                         minwidth_mat=default_lin_minwidths(fixed)./10,
@@ -107,7 +107,7 @@ is a vector encoding the spacing along all axes of the image. `thresh` enforces 
 overlap between the two images; with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
 """
 function qd_affine(fixed, moving, mxshift, linmins, linmaxs;
-                    SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
+                   SD=I,
                    thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    print_interval=100,
@@ -128,7 +128,7 @@ function qd_affine(fixed, moving, mxshift, linmins, linmaxs;
 end
 
 function qd_affine(fixed, moving, mxshift;
-                    SD=Matrix(1.0*I,ndims(fixed),ndims(fixed)),
+                   SD=I,
                    thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    dmax = 0.05, ndmax = 0.05,
