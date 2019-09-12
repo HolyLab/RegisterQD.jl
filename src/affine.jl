@@ -37,12 +37,13 @@ function qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs;
                           initial_tfm=IdentityTransformation(),
                           thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                           minwidth=default_lin_minwidths(moving),
+                          maxevals=5e4,
                           kwargs...)
     f(x) = affine_mm_fast(x, mxshift, fixed, moving, thresh, SD; initial_tfm=initial_tfm)
     upper = linmaxs
     lower = linmins
     root, x0 = _analyze(f, lower, upper;
-                        minwidth=minwidth, print_interval=100, maxevals=5e4, kwargs..., atol=0, rtol=1e-3)
+                        minwidth=minwidth, print_interval=100, maxevals=maxevals, kwargs..., atol=0, rtol=1e-3)
     box = minimum(root)
     params = position(box, x0)
     tfmcoarse0 = linmap(params, moving, initial_tfm)
@@ -56,6 +57,7 @@ function qd_affine_fine(fixed, moving, linmins, linmaxs;
                         initial_tfm=IdentityTransformation(),
                         thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                         minwidth_mat=default_lin_minwidths(fixed)./10,
+                        maxevals=5e4,
                         kwargs...)
     f(x) = affine_mm_slow(x, fixed, moving, thresh, SD; initial_tfm=initial_tfm)
     upper_shft = fill(2.0, ndims(fixed))
@@ -64,7 +66,7 @@ function qd_affine_fine(fixed, moving, linmins, linmaxs;
     minwidth_shfts = fill(0.01, ndims(fixed))
     minwidth = vcat(minwidth_shfts, minwidth_mat)
     root, x0 = _analyze(f, lower, upper;
-                        minwidth=minwidth, print_interval=100, maxevals=5e4, kwargs...)
+                        minwidth=minwidth, print_interval=100, maxevals=maxevals, kwargs...)
     box = minimum(root)
     params = position(box, x0)
     tfmfine = aff(params, moving, initial_tfm)

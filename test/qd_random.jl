@@ -93,7 +93,7 @@ using Test, TestImages
     mxshift = (5,5)
     SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
-    tfm, mm = qd_affine(fixed, moving, mxshift; SD=SD, thresh=thresh, maxevals=1500, rtol=0, fvalue=1e-6)
+    tfm, mm = qd_affine(fixed, moving, mxshift; SD=SD, thresh=thresh, rtol=0, fvalue=1e-3, maxevals=10^4)
     tfm = arrayscale(tfm, SD)
     @test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(tfm.linear[:], tfm.translation))) < 0.1
 
