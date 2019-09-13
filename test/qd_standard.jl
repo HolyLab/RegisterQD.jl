@@ -1,5 +1,7 @@
+using ImageMagick
 using StaticArrays, Interpolations, LinearAlgebra
 using Images, CoordinateTransformations, Rotations
+using OffsetArrays
 using RegisterMismatch
 using RegisterQD
 
@@ -12,7 +14,7 @@ using Test, TestImages
 function fixedmov(img, tfm)
     img = float(img)
     img2 = warp(img,tfm)
-    inds = intersect.(axes(img), axes(img2))
+    inds = OffsetArrays.IdentityUnitRange.(intersect.(axes(img), axes(img2)))
     fixed = img[inds...]
     moving = img2[inds...]
     return fixed, moving
@@ -47,7 +49,7 @@ end
     mxshift = (100,100) #make sure this isn't too small
     tform, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, rtol=0, fvalue=0.0003)
     tfmtest(tfm, tform)
-    
+
     #Rigid transform
     SD = Matrix{Float64}(LinearAlgebra.I, 2, 2)
     tfm = Translation(@SVector([14, 17]))∘LinearMap(RotMatrix(0.3)) #no distortion for now
@@ -55,14 +57,14 @@ end
     mxshift = (100,100) #make sure this isn't too small
     mxrot = (0.5,)
     minwidth_rot = fill(0.002, 3)
-    tform, mm = qd_rigid(centered(fixed), centered(moving), mxshift, mxrot, minwidth_rot, SD; maxevals=1000, rtol=0, fvalue=0.0002)
+    tform, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, tform)
     #with anisotropic sampling
     SD = Matrix(Diagonal([0.5; 1.0]))
     tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.3)*SD)
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_rigid(centered(fixed), centered(moving), mxshift, mxrot, minwidth_rot, SD; maxevals=1000, rtol=0, fvalue=0.0002)
-    tfmtest(tfm, tform)
+    tform, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002)
+    tfmtest(tfm, arrayscale(tform, SD))
 
     #Affine transform
     tfm = Translation(@SVector([14, 17]))∘LinearMap(RotMatrix(0.01))
@@ -72,15 +74,17 @@ end
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
     mxshift = (100,100) #make sure this isn't too small
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_affine(centered(fixed), centered(moving), mxshift, SD; maxevals=1000, rtol=0, fvalue=0.0002)
+    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, tform)
 
     #with anisotropic sampling
     SD = Matrix(Diagonal([0.5; 1.0]))
-    tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.01)*SD)
+    tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(RotMatrix(0.1)) #Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.01)*SD)
     scale = @SMatrix [1.005 0; 0 0.995]
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
+    tfm = arrayscale(tfm, SD)
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_affine(centered(fixed), centered(moving), mxshift, SD; maxevals=1000, rtol=0, fvalue=0.0002)
-    tfmtest(tfm, tform)
+    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=10000, rtol=0, fvalue=0.0002, ndmax = 0.25)
+    tform2 = arrayscale(tform, SD)
+    tfmtest(tfm, tform2)
 end #tests with standard images
