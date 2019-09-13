@@ -8,7 +8,10 @@ using RegisterQD
 
 using Test, TestImages
 
+using Random
+
 @testset "QuadDIRECT tests with random images" begin
+    Random.seed!(879);
     ##### Translations
     #2D
     moving = rand(50,50)
@@ -95,7 +98,7 @@ using Test, TestImages
 
     tfm, mm = qd_affine(fixed, moving, mxshift; SD=SD, thresh=thresh, maxevals=1500, rtol=0, fvalue=1e-6)
     tfm = arrayscale(tfm, SD)
-    @test_broken sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(tfm.linear[:], tfm.translation))) < 0.1
+    @test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(tfm.linear[:], tfm.translation))) < 0.1
 
         #The tests below fail.  Probably two factors contributing to failure:
         # 1) Full affine 3D is a lot of parameters so it's just difficuilt (12 parameters)
