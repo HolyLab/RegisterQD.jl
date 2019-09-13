@@ -84,7 +84,7 @@ end
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
     tfm = arrayscale(tfm, SD)
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=1000, rtol=0, fvalue=0.0002, ndmax = 0.25)
-    tform2 = arrayscale(tform, SD) 
+    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=10000, rtol=0, fvalue=0.0002, ndmax = 0.25)
+    tform2 = arrayscale(tform, SD)
     tfmtest(tfm, tform2)
 end #tests with standard images
