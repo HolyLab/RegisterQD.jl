@@ -2,6 +2,7 @@ using StaticArrays, Interpolations
 using Images, CoordinateTransformations, Rotations
 using RegisterMismatch
 using RegisterQD
+using Random
 
 #import BlockRegistration, RegisterOptimize
 #using RegisterCore, RegisterPenalty, RegisterDeformation, RegisterMismatch, RegisterFit
@@ -9,6 +10,8 @@ using RegisterQD
 using Test, TestImages
 
 @testset "QuadDIRECT tests with random images" begin
+    Random.seed!(879)
+
     ##### Translations
     #2D
     moving = rand(50,50)
