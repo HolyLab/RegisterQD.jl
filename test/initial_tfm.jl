@@ -26,7 +26,7 @@ EYE =Matrix(1.0*I, 3,3)
     # insufficient parameters + no initiat_tfm causes large misalignment
 
     tformtest1, mm1 = qd_rigid(testimage2, testimage1, mxshift, mxrot; print_interval=typemax(Int)) #
-    @test !isapprox(1-mm1, 1)
+    @test !(mm1 < 1e-8)
     @test !isapprox(tformtest1, mytform, atol = 0.1)
 
     #initial_tfm improves alignment
@@ -34,7 +34,7 @@ EYE =Matrix(1.0*I, 3,3)
     tformtest2, mm2 = qd_rigid(testimage2, testimage1, mxshift, mxrot; print_interval=typemax(Int), initial_tfm = mytform) #
  #with the initial_tfm being the true tfm, this should give back the true rotation
 
-    @test isapprox(1-mm2, 1)
+    @test mm2 < 1e-8
     @test isapprox(tformtest2, mytform, atol = 0.0001)
     @test isrotation(tformtest2.linear)
 end #Test initial_tfm improves rotational alignment for rigid
@@ -65,7 +65,7 @@ end #Test initial_tfm improves rotational alignment for rigid
 
     tformtest4, mm4 = qd_rigid(testimage3, testimage4, mxshift, mxrot; print_interval=typemax(Int), initial_tfm = init_tfm) #
 
-    @test isapprox(1-mm4, 1) #this mismatch should be lower!
+    @test mm4 < 1e-8 #this mismatch should be lower!
     @test isapprox(tformtest4.translation, [0, 10, 0])
     @test isapprox(tformtest4.linear, EYE)
 end
@@ -82,12 +82,12 @@ end
     testimage2 = warp(testimage1, mytform, axes(testimage1))
 
     mxrot2 = (0.2,0.2,0.2);
-    minwidth_rot2 = RegisterQD.default_minwidth_rot(CartesianIndices(testimage2), EYE) # TODO can we export this/ allow modification to, say 2* Default
+    minwidth_rot2 = RegisterQD.default_minwidth_rot(CartesianIndices(testimage2), EYE)
 
     # tests with equal spaces produces real rotations
     tformtest0, mm0= qd_rigid(testimage2, testimage1, mxshift, mxrot2; print_interval=typemax(Int))
 
-    @test isapprox(1-mm0, 1, atol = 0.0001)
+    @test mm0 < 1e-8
     @test isapprox(tformtest0, mytform, atol = 0.1)
     @test isrotation(tformtest0.linear)
 
@@ -181,7 +181,7 @@ end #TODO why do these pass when they're missing variables?
     end
 
     tformtest4, mm4 = qd_affine(testimage3, testimage4, mxshift;  print_interval = typemax(Int), initial_tfm = init_tfm, fvalue = 1e-5) #
-    @test isapprox(mm4, 0, atol = 0.0001) #this mismatch should be lower!
+    @test mm4 < 1e-4#this mismatch should be lower!
     @test isapprox(tformtest4.translation, [0.0, 10.0, 0.0])
 
 end
@@ -199,13 +199,13 @@ end
 
     tformtest1, mm1 = qd_affine(testimage2, testimage1, mxshift; print_interval=typemax(Int)) #
     #as the max-rotation is set too low, this should give a bad mismatch, but should still work
-    @test !isapprox(1-mm1, 1)
+    @test !(mm1 < 1e-8)
     @test !isapprox(tformtest1, mytform, atol = 0.1)
 
 
     tformtest2, mm2 = qd_affine(testimage2, testimage1, mxshift; print_interval=typemax(Int), initial_tfm = mytform, fvalue = 1e-5) #
     #with the initial_tfm being the true tfm, this should give back the true rotation
 
-    @test isapprox(1-mm2, 1)
+    @test mm2 < 1e-8
     @test isapprox(tformtest2, mytform, atol = 0.0001) #this may not work so well. see qd_standard.
 end #Test initial_tfm improves rotational alignment for rigid
