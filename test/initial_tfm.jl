@@ -29,7 +29,7 @@ EYE =Matrix(1.0*I, 3,3)
     @test !isapprox(1-mm1, 1)
     @test !isapprox(tformtest1, mytform, atol = 0.1)
 
-    #initiat_tfm improves alignment
+    #initial_tfm improves alignment
 
     tformtest2, mm2 = qd_rigid(testimage2, testimage1, mxshift, mxrot; print_interval=typemax(Int), initial_tfm = mytform) #
  #with the initial_tfm being the true tfm, this should give back the true rotation
