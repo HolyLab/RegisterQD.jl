@@ -1,7 +1,9 @@
 using StaticArrays, Interpolations, LinearAlgebra
 using Images, CoordinateTransformations, Rotations
 using RegisterQD
+using Random
 
+Random.seed!(495)
 g = 0.2:0.2:1.2
 gradcube = g .* reshape(g, 1, 6) .* reshape(g, 1, 1, 6)
 gradcube[1,4,2] = 0
