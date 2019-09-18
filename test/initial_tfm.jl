@@ -9,7 +9,6 @@ gradcube[4,5,2] = 0 #break up any potential rotational symmetry
 
 mxshift = (1,1,1);
 mxrot = (0.01,0.01,0.01);
-minwidth_rot = fill(0.002,3);
 
 EYE =Matrix(1.0*I, 3,3)
 
@@ -82,7 +81,7 @@ end
     testimage2 = warp(testimage1, mytform, axes(testimage1))
 
     mxrot2 = (0.2,0.2,0.2);
-    minwidth_rot2 = RegisterQD.default_minwidth_rot(CartesianIndices(testimage2), EYE)
+    minwidth_rot = RegisterQD.default_minwidth_rot(CartesianIndices(testimage2), EYE)
 
     # tests with equal spaces produces real rotations
     tformtest0, mm0= qd_rigid(testimage2, testimage1, mxshift, mxrot2; print_interval=typemax(Int))
@@ -91,12 +90,12 @@ end
     @test isapprox(tformtest0, mytform, atol = 0.1)
     @test isrotation(tformtest0.linear)
 
-    tformtest01, mm01 = RegisterQD.qd_rigid_coarse(testimage2, testimage1, mxshift, [mxrot2...], minwidth_rot1; SD=EYE, print_interval=typemax(Int))
+    tformtest01, mm01 = RegisterQD.qd_rigid_coarse(testimage2, testimage1, mxshift, [mxrot2...], minwidth_rot; SD=EYE, print_interval=typemax(Int))
     @test isrotation(tformtest01.linear)
 
     tformtest02 = nothing
     mm02 = nothing
-    tformtest02, mm02 = RegisterQD.qd_rigid_fine(testimage2, testimage1, [mxrot2...]./2, minwidth_rot1; SD=EYE, print_interval=typemax(Int))
+    tformtest02, mm02 = RegisterQD.qd_rigid_fine(testimage2, testimage1, [mxrot2...]./2, minwidth_rot; SD=EYE, print_interval=typemax(Int))
     @test isrotation(tformtest02.linear)
 
     #with skewed spacing produces real rotations.
@@ -119,22 +118,22 @@ end
 
 
     #coarse and fine produce real rotations
-    tformtest6, mm6 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot2; SD=SD, print_interval=typemax(Int))
+    tformtest6, mm6 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot; SD=SD, print_interval=typemax(Int))
     @test mm6 <1e-4
     @test isrotation(tformtest6.linear)
     @test !isrotation(SD*tformtest6.linear*inv(SD))
 
-    tformtest66, mm66 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot2; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest6)
+    tformtest66, mm66 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest6)
     @test mm66 <1e-4
     @test isrotation(tformtest66.linear)
     @test !isrotation(SD*tformtest66.linear*inv(SD))
 
-    tformtest7, mm7 = RegisterQD.qd_rigid_fine(testimage6, testimage5, [mxrot2...]./2, minwidth_rot2; SD=SD, print_interval=typemax(Int))
+    tformtest7, mm7 = RegisterQD.qd_rigid_fine(testimage6, testimage5, [mxrot2...]./2, minwidth_rot; SD=SD, print_interval=typemax(Int))
     @test mm7 <1e-4
     @test isrotation(tformtest7.linear)
     @test !isrotation(SD*tformtest7.linear*inv(SD))
 
-    tformtest77, mm77 = RegisterQD.qd_rigid_fine(testimage6, testimage5, [mxrot2...]./2, minwidth_rot2; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest7)
+    tformtest77, mm77 = RegisterQD.qd_rigid_fine(testimage6, testimage5, [mxrot2...]./2, minwidth_rot; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest7)
     @test mm77 <1e-4
     @test isrotation(tformtest77.linear)
     @test !isrotation(SD*tformtest77.linear*inv(SD))
