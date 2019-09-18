@@ -118,7 +118,7 @@ end
     @test !isrotation(SD*tformtest55.linear*inv(SD))
 
 
-    #coarse and find produce real rotations
+    #coarse and fine produce real rotations
     tformtest6, mm6 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot2; SD=SD, print_interval=typemax(Int))
     @test mm6 <1e-4
     @test isrotation(tformtest6.linear)
