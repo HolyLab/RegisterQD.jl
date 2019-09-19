@@ -3,6 +3,7 @@ uuid = "ac24ea0c-1830-11e9-18d4-81f172323054"
 version = "0.1.0"
 
 [deps]
+AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 CenterIndexedArrays = "46a7138f-0d70-54e1-8ada-fb8296f91f24"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
