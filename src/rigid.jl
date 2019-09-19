@@ -67,6 +67,8 @@ end
 
 #rotation + shift, fast because it uses fourier method for shift
 function rigid_mm_fast(theta, mxshift, fixed, moving, thresh, SD; initial_tfm=IdentityTransformation())
+    # The reason this is `initial_tfm ∘ rot` rather than `rot ∘ initial_tfm`
+    # is explained in `linmap`
     tfm = arrayscale(initial_tfm ∘ rot(theta, moving), SD)
     moving, fixed = warp_and_intersect(moving, fixed, tfm)
     bshft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity)
