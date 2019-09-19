@@ -17,7 +17,6 @@ include("translations.jl")
 include("rigid.jl")
 include("affine.jl")
 include("gridsearch.jl")
-include("SD_calculator.jl")
 
 export qd_translate,
         qd_rigid,
