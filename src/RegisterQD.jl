@@ -3,7 +3,7 @@ module RegisterQD
 using Images, CoordinateTransformations, QuadDIRECT
 using RegisterMismatch
 using RegisterCore #just for indmin_mismatch?
-using RegisterDeformation
+using RegisterDeformation, PaddedViews, MappedArrays
 using Rotations
 using Interpolations, CenterIndexedArrays, StaticArrays, OffsetArrays
 using LinearAlgebra
@@ -24,7 +24,8 @@ export qd_translate,
         arrayscale,
         grid_rotations,
         rotation_gridsearch,
-        getSD
+        getSD,
+        qsmooth
 
 # Deprecations
 function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike}, minwidth_rot::VecLike, SD::AbstractMatrix=I; kwargs...)

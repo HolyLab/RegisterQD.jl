@@ -180,6 +180,40 @@ function getSD(sd::NTuple{N,Tuple}) where N
     return SMatrix{N,N}(SD) #returns static matrix for faster type inferrence
 end
 
+"""
+    imgq = qsmooth(img)
+    imgq = qsmooth(T, img)
+
+Create a smoothed version of `img`, smoothing with the kernel of a quadratic B-spline.
+Use this on your `fixed` image in preparation for registration, and pass `presmoothed`
+as an option. (Do not smooth `moving`.)
+
+`T` allows you to specify the output eltype (default `Float32`).
+"""
+function qsmooth(::Type{T}, img::AbstractArray{T2,N}) where {T,N,T2}
+    kern1 = centered(T[1/8, 3/4, 1/8])   # quadratic B-spline kernel
+    return imfilter(img, kernelfactors(ntuple(i->kern1, Val(N))))
+end
+qsmooth(img::AbstractArray) = qsmooth(Float32, img)
+
+function qinterp(::Type{T}, moving) where T
+    widen1(ax) = first(ax)-1:last(ax)+1
+
+    # This sets up an interpolant object *without* using Interpolations.prefilter
+    # Prefiltering is a form of "anti-smoothing," meaning that for quadratic interpolation
+    # it defines a coefficient array so that, when you interpolate (aka, smooth),
+    # it reconstructs the original values. In this case, we *want* interpolation to
+    # perform smoothing, because the user has applied the same smoothing to `fixed`
+    # by calling `qsmooth`.
+    # Build the coefficient array. Quadratic interpolation requires one beyond-the-edge
+    # element, which we set to NaN
+    nanT = convert(T, NaN)
+    mmpad = PaddedView(nanT, of_eltype(T, moving), widen1.(axes(moving)))
+    # Create the interpolant, bypassing prefiltering
+    return extrapolate(Interpolations.BSplineInterpolation(T, T.(mmpad), BSpline(Quadratic(Free(OnCell()))), axes(moving)), nanT)
+end
+
+
 #     θ = Inf
 #     # R = I + [0 -Δθ; Δθ 0] is a rotmtrx for infinitesimal Δθ
 #     # `dRdθ` is the "slope" of the rotation, which allows us to compute

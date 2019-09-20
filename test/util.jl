@@ -1,7 +1,9 @@
 using ImageMagick
 using TestImages
 using LinearAlgebra
-using AxisArrays, ImageMetadata
+using ImageMetadata
+import AxisArrays
+using AxisArrays: AxisArray, Axis
 using Unitful: μm, mm, cm, km, s
 
 @testset "default_minwidth_rot" begin
