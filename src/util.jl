@@ -148,7 +148,6 @@ end
     getSD(A::AbstractArray)
 
 If your image is not uniformily sampled, use this to get the `SD` matrix, which represents spacing along all axes of an image.
-Please remember to strip out the time axis.
 
 # Examples
 ```julia-repl
