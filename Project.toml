@@ -1,6 +1,6 @@
 name = "RegisterQD"
 uuid = "ac24ea0c-1830-11e9-18d4-81f172323054"
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 CenterIndexedArrays = "46a7138f-0d70-54e1-8ada-fb8296f91f24"
