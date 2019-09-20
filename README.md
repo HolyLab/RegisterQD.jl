@@ -17,6 +17,6 @@ In general, using more degrees of freedom allows you to solve harder optimizatio
 See the help on these functions for details about how to call them.
 
 Another important feature of this package is that it supports images that were sampled anisotropically. This is particularly common for three-dimensional biomedical imaging, where MRI and optical microscopy typically have one axis sampled at lower resolution.
-A rotation (from a rigid transformation) in physical space needs to be modified before applying it to an anisotropically-sampled image; see the `arrayscale` function for more information.
+A rotation (from a rigid transformation) in physical space needs to be modified before applying it to an anisotropically-sampled image; see `arrayscale` and `getSD` for more information.
 
 **NOTE**: see NEWS.md for information about a recent breaking change.
