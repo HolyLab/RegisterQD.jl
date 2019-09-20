@@ -26,20 +26,20 @@ end
 @testset "getSD" begin
     #test that getSD deals with arbitrary dimensions
     A2 = rand(10,10)
-    @test getSD(A2) == diagm(ones(2))
+    @test getSD(A2) == I
 
     A3 = rand(10,10,10)
-    @test getSD(A3) == diagm(ones(3))
+    @test getSD(A3) == I
 
     A5 = rand(10,10,10,10,10)
-    @test getSD(A5) == diagm(ones(5))
+    @test getSD(A5) == I
 
     Ax3 = AxisArray(A3, 1:1:10, 1:2:20, 1:3:30)
-    @test getSD(Ax3) == diagm([1.0,2.0,3.0])
+    @test getSD(Ax3) == Diagonal([1.0,2.0,3.0])
 
     #test that getSD works with test images
     mri = testimage("mri-stack.tif")
-    @test getSD(mri) == diagm([1.0, 1.0, 5.0])
+    @test getSD(mri) == Diagonal([1.0, 1.0, 5.0])
 
     #test that getSD deals with images with arbitrary space directions
     skewed = ImageMeta(rand(10,10,10))
@@ -50,7 +50,7 @@ end
     #test that getSD can reconcile units of different magnitudes
     badsampling = AxisArray(rand(10,10,10), (:x,:y,:z), (1mm, 2km, 3.4cm))
     badsampling = ImageMeta(badsampling)
-    @test getSD(badsampling) == diagm([1, 2e6, 34])
+    @test getSD(badsampling) == Diagonal([1, 2e6, 34])
 
     #test that getSD ignores the time-axis
     timedarray = AxisArray(rand(10,10,10), (:x, :y, :time), (1μm, 1μm, 1s))
