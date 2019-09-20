@@ -144,6 +144,42 @@ function default_minwidth_rot(ci::CartesianIndices{3}, SD=I; kwargs...)
     return [θ, θ, θ]
 end
 
+"""
+    getSD(A::AbstractArray)
+
+If your image is not uniformily sampled, use this to get the `SD` matrix, which represents spacing along all axes of an image.
+
+# Examples
+```julia-repl
+julia> myimage
+Normed ImageMeta with:
+  data: 3-dimensional AxisArray{N2f14,3,...} with axes:
+    :x, 0.0 μm:0.71 μm:6.39 μm
+    :l, 0.0 μm:0.71 μm:6.39 μm
+    :z, 0.0 μm:6.2 μm:55.8 μm
+And data, a 10×10×10 Array{N2f14,3} with eltype Normed{UInt16,14}
+  properties:
+    imagineheader: <suppressed>
+
+julia> getSD(myimage)
+3×3 SArray{Tuple{3,3},Float64,2,9} with indices SOneTo(3)×SOneTo(3):
+ 0.71  0.0   0.0
+ 0.0   0.71  0.0
+ 0.0   0.0   6.2
+```
+"""
+getSD(A::AbstractArray) = getSD(spacedirections(A)) #takes advantage of how spacedirections automatically strips out the time component
+function getSD(sd::NTuple{N,Tuple}) where N
+    SD = zeros(N,N)
+    denom = oneunit(sd[1][1]) #dividing by a unit should remove unit inconsistancies
+    for i = 1:N
+        for j = 1:N
+            SD[i,j] = sd[i][j]/denom
+        end
+    end
+    return SMatrix{N,N}(SD) #returns static matrix for faster type inferrence
+end
+
 #     θ = Inf
 #     # R = I + [0 -Δθ; Δθ 0] is a rotmtrx for infinitesimal Δθ
 #     # `dRdθ` is the "slope" of the rotation, which allows us to compute

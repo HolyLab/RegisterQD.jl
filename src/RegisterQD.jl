@@ -23,7 +23,8 @@ export qd_translate,
         qd_affine,
         arrayscale,
         grid_rotations,
-        rotation_gridsearch
+        rotation_gridsearch,
+        getSD
 
 # Deprecations
 function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike}, minwidth_rot::VecLike, SD::AbstractMatrix=I; kwargs...)

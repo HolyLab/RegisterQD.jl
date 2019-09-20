@@ -16,11 +16,15 @@ RegisterMismatch = "3c0dd727-6833-5f5d-a1e8-c0d421935c74"
 Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
+
 [extras]
+AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
+ImageMetadata = "bc367c6b-8a6b-528e-b4bd-a4b897500b49"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [targets]
-test = ["Test", "ImageMagick", "TestImages", "Random"]
+test = ["Test", "ImageMagick", "TestImages", "Random", "AxisArrays", "ImageMetadata", "Unitful"]
