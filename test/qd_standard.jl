@@ -1,14 +1,12 @@
 using ImageMagick
 using StaticArrays, Interpolations, LinearAlgebra
-using Images, CoordinateTransformations, Rotations
+using Images, CoordinateTransformations, Rotations, Distributions
 using OffsetArrays
 using RegisterMismatch
 using RegisterQD
 
-#import BlockRegistration, RegisterOptimize
-#using RegisterCore, RegisterPenalty, RegisterDeformation, RegisterMismatch, RegisterFit
-
 using Test, TestImages
+using Random
 
 #Helper to generate test image pairs
 function fixedmov(img, tfm)
@@ -88,3 +86,38 @@ end
     tform2 = arrayscale(tform, SD)
     tfmtest(tfm, tform2)
 end #tests with standard images
+
+@testset "Quadratic interpolation (issue #7)" begin
+    samplefrom(n) = rand(Poisson(n))
+
+    Random.seed!(222)
+    img = restrict(restrict(testimage("cameraman")))[2:end-1,2:end-1]
+    # Convert to "photons" so we can mimic shot noise
+    np = 100  # maximum number of photons per pixel
+    img = round.(Int, np.*gray.(img))
+    fixed  = samplefrom.(img)
+    moving = samplefrom.(img)
+    ff = qsmooth(fixed)
+
+    tform, mm = qd_translate(fixed, moving, (5, 5); print_interval=typemax(Int))
+    tformq, mmq = qd_translate(ff, moving, (5, 5); presmoothed=true, print_interval=typemax(Int))
+    @test all(abs.(tformq.translation) .< abs.(tform.translation))
+
+    tform, mm = qd_rigid(fixed, moving, (5, 5), 0.1; print_interval=typemax(Int))
+    tformq, mmq = qd_rigid(ff, moving, (5, 5), 0.1; presmoothed=true, print_interval=typemax(Int))
+    @test norm(tformq.linear-I) < norm(tform.linear-I)
+    @test norm(tformq.translation) < norm(tform.translation)
+
+    tform, mm = qd_affine(fixed, moving, (5, 5); print_interval=typemax(Int))
+    tformq, mmq = qd_affine(ff, moving, (5, 5); presmoothed=true, print_interval=typemax(Int))
+    @test mmq < mm
+
+    # Test that we exactly reconstruct `qsmooth` with `presmoothed=true`
+    tformq, mmq = qd_translate(ff, fixed, (5, 5); presmoothed=true, print_interval=typemax(Int))
+    @test all(iszero, tformq.translation)
+    @test mmq < 1e-10
+    tformq, mmq = qd_rigid(ff, fixed, (5, 5), 0.1; presmoothed=true, print_interval=typemax(Int))
+    @test mmq < 1e-8
+    tformq, mmq = qd_affine(ff, fixed, (5, 5); presmoothed=true, print_interval=typemax(Int))
+    @test mmq < 1e-6   # on 32-bit systems this can't be 1e-8, not quite sure why
+end

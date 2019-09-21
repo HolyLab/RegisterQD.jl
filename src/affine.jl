@@ -60,7 +60,7 @@ end
 function affine_mm_fast(params, mxshift, fixed, moving, thresh, SD; initial_tfm=IdentityTransformation())
     tfm = arrayscale(linmap(params, moving, initial_tfm), SD)
     moving, fixed = warp_and_intersect(moving, fixed, tfm)
-    bshft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity) #TODO is this broken?
+    bshft, mm = best_shift(fixed, moving, mxshift, thresh; normalization=:intensity)
     return mm
 end
 
@@ -146,8 +146,8 @@ end
 # You supply one or the other, so I don't see a problem.
 #TODO I think that this is a tad loquatious, and not enough examples. Permission to rework it?
 """
-`tform, mm = qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=I; thresh, initial_tfm, kwargs...)`
-`tform, mm = qd_affine(fixed, moving, mxshift, SD=I; thresh, initial_tfm, kwargs...)`
+`tform, mm = qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=I; presmoothed=false, thresh, initial_tfm, kwargs...)`
+`tform, mm = qd_affine(fixed, moving, mxshift, SD=I; presmoothed=false, thresh, initial_tfm, kwargs...)`
 optimizes an affine transformation (linear map + translation) to minimize the mismatch between `fixed` and
 `moving` using the QuadDIRECT algorithm.  The algorithm is run twice: the first step samples the search space
 at a coarser resolution than the second.  `kwargs...` may contain any keyword argument that can be passed to
@@ -169,6 +169,9 @@ This default search-space allows for very little rotation.
 Alternatively, you can submit `dmax` or `ndmax` values as keyword functions, which will use diagonal or non-diagonal variation from the identity matrix
 to generate less modest `linmins` and `linmaxs` arguments for you.
 
+Use `presmoothed=true` if you have called [`qsmooth`](@ref) on `fixed` before calling `qd_affine`.
+Do not smooth `moving`.
+
 `kwargs...` can also include any other keyword argument that can be passed to `QuadDIRECT.analyze`.
 It's recommended that you pass your own stopping criteria when possible (i.e. `rtol`, `atol`, and/or `fvalue`).
 
@@ -179,12 +182,16 @@ is a vector encoding the spacing along all axes of the image. `thresh` enforces 
 overlap between the two images; with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
 """
 function qd_affine(fixed, moving, mxshift, linmins, linmaxs;
+                   presmoothed=false,
                    SD=I,
                    thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    print_interval=100,
                    kwargs...)
     fixed, moving = float(fixed), float(moving)
+    if presmoothed
+        moving = qinterp(eltype(fixed), moving)
+    end
     linmins = [linmins...]
     linmaxs = [linmaxs...]
     print_interval < typemax(Int) && print("Running coarse step\n")

@@ -121,6 +121,7 @@ end
 
 """
     tform, mm = qd_rigid(fixed, moving, mxshift, mxrot;
+                         presmoothed=false,
                          SD=I, minwidth_rot=default_minwidth_rot(fixed, SD),
                          thresh=thresh, initial_tfm=IdentityTransformation(), kwargs...)
 
@@ -167,11 +168,15 @@ of the sum-of-squared-intensity of `fixed`.
 
 If you have a good initial guess at the solution, pass it with the `initial_tfm` kwarg to jump-start the search.
 
+Use `presmoothed=true` if you have called [`qsmooth`](@ref) on `fixed` before calling `qd_rigid`.
+Do not smooth `moving`.
+
 Both the output `tfm` and any `initial_tfm` are represented in *physical* coordinates;
 as long as `initial_tfm` is a rigid transformation, `tfm` will be a pure rotation+translation.
 If `SD` is not the identity, use `arrayscale` before applying the result to `moving`.
 """
 function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike};
+                  presmoothed=false,
                   SD=I,
                   minwidth_rot=default_minwidth_rot(CartesianIndices(fixed), SD),
                   thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
@@ -184,6 +189,9 @@ function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike};
         @show "WARNING: initial_tfm is not a rigid transformation"
     end
     fixed, moving = float(fixed), float(moving)
+    if presmoothed
+        moving = qinterp(eltype(fixed), moving)
+    end
     mxrot = [mxrot...]
     print_interval < typemax(Int) && print("Running coarse step\n")
     tfm_coarse, mm_coarse = qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot; SD=SD, initial_tfm=initial_tfm, thresh=thresh, print_interval=print_interval, kwargs...)
