@@ -19,7 +19,7 @@ using Test, TestImages
     newfixed = warp(moving, tfm0)
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(Base.axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (10,10)
 
