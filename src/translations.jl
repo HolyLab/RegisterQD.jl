@@ -31,7 +31,7 @@ end
 `tform, mm = qd_translate(fixed, moving, mxshift; presmoothed=false, thresh=thresh, kwargs...)`
 optimizes a simple shift (translation) to minimize the mismatch between `fixed` and
 `moving` using the QuadDIRECT algorithm with the constraint that no shifts larger than
-``mxshift` will be considered.
+``mxshift` (after an optional `initial_tfm`) will be considered.
 
 Both `mxshift` and the returned translation are specified in terms of pixel units, so the
 algorithm need not be aware of anisotropic sampling.
@@ -50,9 +50,9 @@ If you have a good initial guess at the solution, pass it with the `initial_tfm`
 `thresh` enforces a certain amount of sum-of-squared-intensity overlap between the two images;
 with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
 
-If the `crop` keyword arg is `true` then `fixed` is cropped by `mxshift` on all sides so that there will be
-complete overlap between `fixed` and `moving` for any evaluated shift. This avoids edge effects that can
-occur due to normalization when the transformed `moving` doesn't fully overlap with `fixed`.
+If the `crop` keyword arg is `true` then `fixed` is cropped by `mxshift` (after the optional `initial_tfm`) on all sides 
+so that there will be complete overlap between `fixed` and `moving` for any evaluated shift. This avoids edge effects
+that can occur due to normalization when the transformed `moving` doesn't fully overlap with `fixed`.
 """
 function qd_translate(fixed, moving, mxshift;
                       presmoothed=false,
