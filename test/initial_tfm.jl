@@ -1,6 +1,10 @@
-using StaticArrays, Interpolations, LinearAlgebra
-using Images, CoordinateTransformations, Rotations
 using RegisterQD
+using LinearAlgebra
+using RegisterQD.StaticArrays
+using RegisterQD.Interpolations
+using RegisterQD.Images
+using RegisterQD.CoordinateTransformations
+using RegisterQD.Rotations
 
 g = 0.2:0.2:1.2
 gradcube = g .* reshape(g, 1, 6) .* reshape(g, 1, 1, 6)

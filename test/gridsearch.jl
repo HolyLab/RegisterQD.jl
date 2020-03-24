@@ -1,5 +1,6 @@
-using CoordinateTransformations
-using RegisterDeformation, RegisterQD
+using RegisterQD
+using RegisterQD.CoordinateTransformations
+using RegisterQD.RegisterDeformation
 using Test
 
 @testset "Grid search rigid registration" begin

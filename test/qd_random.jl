@@ -1,7 +1,10 @@
-using StaticArrays, Interpolations
-using Images, CoordinateTransformations, Rotations
-using RegisterMismatch
 using RegisterQD
+using RegisterQD.StaticArrays
+using RegisterQD.Interpolations
+using RegisterQD.Images
+using RegisterQD.CoordinateTransformations
+using RegisterQD.Rotations
+using RegisterQD.RegisterMismatch
 using Random
 
 #import BlockRegistration, RegisterOptimize

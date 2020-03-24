@@ -1,5 +1,6 @@
 using ImageMagick
 using TestImages
+using RegisterQD
 using LinearAlgebra
 using ImageMetadata
 import AxisArrays
@@ -44,7 +45,7 @@ end
     #test that getSD deals with images with arbitrary space directions
     skewed = ImageMeta(rand(10,10,10))
     skewmatrix = rand(3,3)
-    skewed["spacedirections"] = (Tuple(skewmatrix[1,:]), Tuple(skewmatrix[2,:]), Tuple(skewmatrix[3,:]))
+    skewed.spacedirections = (Tuple(skewmatrix[1,:]), Tuple(skewmatrix[2,:]), Tuple(skewmatrix[3,:]))
     getSD(skewed) == skewmatrix
 
     #test that getSD can reconcile units of different magnitudes
