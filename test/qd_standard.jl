@@ -1,9 +1,14 @@
-using ImageMagick
-using StaticArrays, Interpolations, LinearAlgebra
-using Images, CoordinateTransformations, Rotations, Distributions
-using OffsetArrays
-using RegisterMismatch
 using RegisterQD
+using LinearAlgebra
+using ImageMagick
+using Distributions
+using RegisterQD.StaticArrays
+using RegisterQD.Interpolations
+using RegisterQD.Images
+using RegisterQD.CoordinateTransformations
+using RegisterQD.Rotations
+using RegisterQD.OffsetArrays
+using RegisterQD.RegisterMismatch
 
 using Test, TestImages
 using Random
