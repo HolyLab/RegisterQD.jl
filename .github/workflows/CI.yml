@@ -37,8 +37,13 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
-      - name: registry_add
+      - name: registry_add(ubunto)
+        if: ${{matrix.os == 'ubunto-latest'}}
         run: julia -e 'using Pkg; pkg"registry add General https://github.com/HolyLab/HolyLabRegistry.git"'
+      - name: registry_add(windows)
+        if: ${{matrix.os == 'windows-latest'}}
+        run: julia -e "using Pkg; pkg\"registry add General https://github.com/HolyLab/HolyLabRegistry.git\""
+        shell: cmd
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
