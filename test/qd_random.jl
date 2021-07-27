@@ -23,7 +23,7 @@ using Test, TestImages
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
     fixed = etp(Base.axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
-    thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
+    thresh = 0.1 * sum(_abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (10,10)
 
     tfm, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, thresh=thresh, rtol=0)
@@ -41,7 +41,7 @@ using Test, TestImages
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
     fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
-    thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
+    thresh = 0.1 * sum(_abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (5,5,5)
 
     tfm, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, thresh=thresh, rtol=0)
@@ -56,7 +56,7 @@ using Test, TestImages
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
     fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
-    thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
+    thresh = 0.1 * sum(_abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (10,10)
     mxrot = pi/90
     minwidth_rot = [0.0002]
@@ -73,7 +73,7 @@ using Test, TestImages
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
     fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
-    thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
+    thresh = 0.1 * sum(_abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (5,5,5)
     mxrot = [pi/90; pi/90; pi/90]
     minwidth_rot = fill(0.0002, 3)
@@ -95,7 +95,7 @@ using Test, TestImages
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
     fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
-    thresh = 0.5 * sum(abs2.(fixed[.!(isnan.(fixed))]))
+    thresh = 0.5 * sum(_abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (5,5)
     SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
@@ -118,7 +118,7 @@ using Test, TestImages
         #inds = intersect.(axes(moving), axes(newfixed))
         #fixed = newfixed[inds...]
         #moving = moving[inds...]
-        #thresh = 0.1 * (sum(abs2.(fixed[.!(isnan.(fixed))]))+sum(abs2.(moving[.!(isnan.(moving))])));
+        #thresh = 0.1 * (sum(_abs2.(fixed[.!(isnan.(fixed))]))+sum(_abs2.(moving[.!(isnan.(moving))])));
         #mxshift = (10,10,10)
         #SD = eye(ndims(fixed));
 
@@ -141,7 +141,7 @@ using Test, TestImages
         #inds = intersect.(axes(moving), axes(newfixed))
         #fixed = newfixed[inds...]
         #moving = moving[inds...]
-        #thresh = 0.5 * sum(abs2.(fixed[.!(isnan.(fixed))]));
+        #thresh = 0.5 * sum(_abs2.(fixed[.!(isnan.(fixed))]));
         #mxshift = (5,5,5)
         #SD = eye(ndims(fixed));
         #@test RegisterOptimize.aff(vcat(tfm00.translation[:], tfm00.linear[:]), fixed, SD) == tfm0

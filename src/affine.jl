@@ -84,7 +84,7 @@ which is why this is "coarse" optimization.
 function qd_affine_coarse(fixed, moving, mxshift, linmins, linmaxs;
                           SD=I,
                           initial_tfm=IdentityTransformation(),
-                          thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                          thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
                           minwidth=default_lin_minwidths(moving),
                           maxevals=5e4,
                           kwargs...)
@@ -117,7 +117,7 @@ As a consequence, any large translations must be supplied with reasonable accura
 function qd_affine_fine(fixed, moving, linmins, linmaxs;
                         SD=I,
                         initial_tfm=IdentityTransformation(),
-                        thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                        thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
                         minwidth_mat=default_lin_minwidths(fixed)./10,
                         maxevals=5e4,
                         kwargs...)
@@ -184,7 +184,7 @@ overlap between the two images; with non-zero `thresh`, it is not permissible to
 function qd_affine(fixed, moving, mxshift, linmins, linmaxs;
                    presmoothed=false,
                    SD=I,
-                   thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                   thresh=0.5*sum(_abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    print_interval=100,
                    kwargs...)

@@ -16,7 +16,7 @@ end
 function qd_translate_fine(fixed, moving;
                            initial_tfm=IdentityTransformation(),
                            minwidth=fill(0.01, ndims(fixed)),
-                           thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                           thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
                            kwargs...)
     f(x) = translate_mm_slow(x, fixed, moving, thresh; initial_tfm=initial_tfm)
     upper = fill(1.0, ndims(fixed))
@@ -50,13 +50,13 @@ If you have a good initial guess at the solution, pass it with the `initial_tfm`
 `thresh` enforces a certain amount of sum-of-squared-intensity overlap between the two images;
 with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
 
-If the `crop` keyword arg is `true` then `fixed` is cropped by `mxshift` (after the optional `initial_tfm`) on all sides 
+If the `crop` keyword arg is `true` then `fixed` is cropped by `mxshift` (after the optional `initial_tfm`) on all sides
 so that there will be complete overlap between `fixed` and `moving` for any evaluated shift. This avoids edge effects
 that can occur due to normalization when the transformed `moving` doesn't fully overlap with `fixed`.
 """
 function qd_translate(fixed, moving, mxshift;
                       presmoothed=false,
-                      thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                      thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
                       initial_tfm=IdentityTransformation(),
                       minwidth=fill(0.01, ndims(fixed)), print_interval=100, crop=false, kwargs...)
     fixed, moving = float(fixed), float(moving)
