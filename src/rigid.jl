@@ -86,7 +86,7 @@ end
 function qd_rigid_coarse(fixed, moving, mxshift, mxrot, minwidth_rot;
                          SD=I,
                          initial_tfm=IdentityTransformation(),
-                         thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                         thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
                          kwargs...)
     #note: if a trial rotation results in image overlap < thresh for all possible shifts then QuadDIRECT throws an error
     f(x) = rigid_mm_fast(x, mxshift, fixed, moving, thresh, SD; initial_tfm=initial_tfm)
@@ -104,7 +104,7 @@ end
 function qd_rigid_fine(fixed, moving, mxrot, minwidth_rot;
                        SD=I,
                        initial_tfm=IdentityTransformation(),
-                       thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                       thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
                        kwargs...)
     f(x) = rigid_mm_slow(x, fixed, moving, thresh, SD; initial_tfm=initial_tfm)
     upper_shft = fill(2.0, ndims(fixed))
@@ -179,7 +179,7 @@ function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike};
                   presmoothed=false,
                   SD=I,
                   minwidth_rot=default_minwidth_rot(CartesianIndices(fixed), SD),
-                  thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
+                  thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
                   initial_tfm=IdentityTransformation(),
                   print_interval=100,
                   kwargs...)

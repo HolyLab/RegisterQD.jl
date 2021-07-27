@@ -240,3 +240,8 @@ function _analyze(f, lower, upper; kwargs...)
     splits = ([[lower[i]; lower[i]+(upper[i]-lower[i])/2; upper[i]] for i=1:length(lower)]...,)
     QuadDIRECT.analyze(f, splits, lower, upper; kwargs...)
 end
+
+# abs2 was removed in https://github.com/JuliaGraphics/ColorVectorSpace.jl/pull/131
+# this is the current recommended replacement
+# TODO: follow https://github.com/JuliaGraphics/ColorVectorSpace.jl/issues/157 and adjust for changes
+_abs2(c) = mapreducec(v->float(v)^2, +, float(zero(eltype(c))), c)
