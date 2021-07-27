@@ -1,6 +1,6 @@
 name = "RegisterQD"
 uuid = "ac24ea0c-1830-11e9-18d4-81f172323054"
-version = "0.2.4"
+version = "0.2.5"
 
 [deps]
 CenterIndexedArrays = "46a7138f-0d70-54e1-8ada-fb8296f91f24"
@@ -21,7 +21,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 [compat]
 CenterIndexedArrays = "0.2"
 CoordinateTransformations = "0.5, 0.6"
-Images = "0.20, 0.21, 0.22, 0.23"
+Images = "0.20, 0.21, 0.22, 0.23, 0.24"
 Interpolations = "0.12, 0.13"
 MappedArrays = "0.2, 0.3, 0.4"
 OffsetArrays = "0.11, 1"
