@@ -97,7 +97,7 @@ end #tests with standard images
 
     img = restrict(restrict(testimage("cameraman")))[2:end-1,2:end-1]
     # Convert to "photons" so we can mimic shot noise
-    np = 100  # maximum number of photons per pixel
+    np = 1000  # maximum number of photons per pixel
     img = round.(Int, np.*gray.(img))
     fixed  = samplefrom.(img)
     moving = samplefrom.(img)
