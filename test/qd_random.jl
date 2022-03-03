@@ -80,7 +80,7 @@ using Test, TestImages
     minwidth_rot = fill(0.0002, 3)
     SD = SDiagonal(@SVector(ones(ndims(fixed))))
 
-    tfm, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, thresh=thresh, maxevals=1000, rtol=0)
+    tfm, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, thresh=thresh, maxevals=Sys.iswindows() ? 2000 : 1000, rtol=0)
     tfm = arrayscale(tfm, SD)
     @test sum(abs.(vcat(tfm0.linear[:], tfm0.translation) - vcat(RotXYZ(tfm.linear)[:], tfm.translation))) < 0.1
 
