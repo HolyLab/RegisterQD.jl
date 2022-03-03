@@ -95,7 +95,6 @@ end #tests with standard images
 @testset "Quadratic interpolation (issue #7)" begin
     samplefrom(n) = rand(Poisson(n))
 
-    Random.seed!(222)
     img = restrict(restrict(testimage("cameraman")))[2:end-1,2:end-1]
     # Convert to "photons" so we can mimic shot noise
     np = 100  # maximum number of photons per pixel
