@@ -28,13 +28,13 @@ EYE =Matrix(1.0*I, 3,3)
 
     # insufficient parameters + no initiat_tfm causes large misalignment
 
-    tformtest1, mm1 = qd_rigid(testimage2, testimage1, mxshift, mxrot; print_interval=typemax(Int)) #
+    tformtest1, mm1 = qd_rigid(testimage2, testimage1, mxshift, mxrot; print_interval=typemax(Int)) #
     @test !(mm1 < 1e-8)
     @test !isapprox(tformtest1, mytform, atol = 0.1)
 
     #initial_tfm improves alignment
 
-    tformtest2, mm2 = qd_rigid(testimage2, testimage1, mxshift, mxrot; print_interval=typemax(Int), initial_tfm = mytform) #
+    tformtest2, mm2 = qd_rigid(testimage2, testimage1, mxshift, mxrot; print_interval=typemax(Int), initial_tfm = mytform) #
  #with the initial_tfm being the true tfm, this should give back the true rotation
 
     @test mm2 < 1e-8
@@ -60,13 +60,13 @@ end #Test initial_tfm improves rotational alignment for rigid
 
     #no initial_tfm should fail due to total lack of overlap
     @test try
-        tformtest3, mm3 = qd_rigid(testimage3, testimage4, mxshift, mxrot; print_interval=typemax(Int)) #
+        tformtest3, mm3 = qd_rigid(testimage3, testimage4, mxshift, mxrot; print_interval=typemax(Int)) #
         false
     catch err
         true  # this should break
     end
 
-    tformtest4, mm4 = qd_rigid(testimage3, testimage4, mxshift, mxrot; print_interval=typemax(Int), initial_tfm = init_tfm) #
+    tformtest4, mm4 = qd_rigid(testimage3, testimage4, mxshift, mxrot; print_interval=typemax(Int), initial_tfm = init_tfm) #
 
     @test mm4 < 1e-8 #this mismatch should be lower!
     @test isapprox(tformtest4.translation, [0, 10, 0])
@@ -89,18 +89,18 @@ end
 
     # tests with equal spaces produces real rotations
     # TODO: the next test is machine-dependent, figure out why
-    tformtest0, mm0 = qd_rigid(testimage2, testimage1, mxshift, mxrot2; fvalue=1e-5, rtol=0, print_interval=typemax(Int))
+    tformtest0, mm0 = qd_rigid(testimage2, testimage1, mxshift, mxrot2; fvalue=1e-5, rtol=0, print_interval=typemax(Int))
 
     @test mm0 < 1e-5
     @test isapprox(tformtest0, mytform, atol = 0.1)
     @test isrotation(tformtest0.linear)
 
-    tformtest01, mm01 = RegisterQD.qd_rigid_coarse(testimage2, testimage1, mxshift, [mxrot2...], minwidth_rot; SD=EYE, print_interval=typemax(Int))
+    tformtest01, mm01 = RegisterQD.qd_rigid_coarse(testimage2, testimage1, mxshift, [mxrot2...], minwidth_rot; SD=EYE, print_interval=typemax(Int))
     @test isrotation(tformtest01.linear)
 
     tformtest02 = nothing
     mm02 = nothing
-    tformtest02, mm02 = RegisterQD.qd_rigid_fine(testimage2, testimage1, [mxrot2...]./2, minwidth_rot; SD=EYE, print_interval=typemax(Int))
+    tformtest02, mm02 = RegisterQD.qd_rigid_fine(testimage2, testimage1, [mxrot2...]./2, minwidth_rot; SD=EYE, print_interval=typemax(Int))
     @test isrotation(tformtest02.linear)
 
     #with skewed spacing produces real rotations.
@@ -109,13 +109,13 @@ end
     ps = (1, 1, 2)
     SD =SArray{Tuple{3,3}}(Diagonal(SVector(ps) ./ minimum(ps)))
 
-    tformtest5, mm5 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int))
+    tformtest5, mm5 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int))
     @test mm5 <1e-4
     @test isapprox(tformtest5, mytform, atol = 1)
     @test isrotation(tformtest5.linear)
     @test !isrotation(SD*tformtest5.linear*inv(SD))
 
-    tformtest55, mm55 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest5)
+    tformtest55, mm55 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest5)
     @test mm55 <1e-4
     @test isapprox(tformtest55, mytform, atol = 1)
     @test isrotation(tformtest55.linear)
@@ -123,36 +123,36 @@ end
 
 
     #coarse and fine produce real rotations
-    tformtest6, mm6 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot; SD=SD, print_interval=typemax(Int))
+    tformtest6, mm6 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot; SD=SD, print_interval=typemax(Int))
     @test mm6 <1e-4
     @test isrotation(tformtest6.linear)
     @test !isrotation(SD*tformtest6.linear*inv(SD))
 
-    tformtest66, mm66 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest6)
+    tformtest66, mm66 = RegisterQD.qd_rigid_coarse(testimage6, testimage5, mxshift, mxrot2, minwidth_rot; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest6)
     @test mm66 <1e-4
     @test isrotation(tformtest66.linear)
     @test !isrotation(SD*tformtest66.linear*inv(SD))
 
-    tformtest7, mm7 = RegisterQD.qd_rigid_fine(testimage6, testimage5, [mxrot2...]./2, minwidth_rot; SD=SD, print_interval=typemax(Int))
+    tformtest7, mm7 = RegisterQD.qd_rigid_fine(testimage6, testimage5, [mxrot2...]./2, minwidth_rot; SD=SD, print_interval=typemax(Int))
     @test mm7 <1e-4
     @test isrotation(tformtest7.linear)
     @test !isrotation(SD*tformtest7.linear*inv(SD))
 
-    tformtest77, mm77 = RegisterQD.qd_rigid_fine(testimage6, testimage5, [mxrot2...]./2, minwidth_rot; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest7)
+    tformtest77, mm77 = RegisterQD.qd_rigid_fine(testimage6, testimage5, [mxrot2...]./2, minwidth_rot; SD=SD, print_interval=typemax(Int), initial_tfm = tformtest7)
     @test mm77 <1e-4
     @test isrotation(tformtest77.linear)
     @test !isrotation(SD*tformtest77.linear*inv(SD))
     #fails due to specific error in qd_rigid_fine
 
     # a non rigid initial_tfm does not return a rigid transformation and prints an error message (?)
-    tformtest8, mm8 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = AffineMap(SD\tformtest5.linear*SD, SD\tformtest5.translation))
+    tformtest8, mm8 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = AffineMap(SD\tformtest5.linear*SD, SD\tformtest5.translation))
     @test mm8 <1e-4
     @test isapprox(tformtest8, mytform, atol = 1)
     @test !isrotation(tformtest8.linear)
 
     mktemp() do path, io
         redirect_stdout(io) do
-            tformtest8, mm8 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = AffineMap(SD\tformtest5.linear*SD, SD\tformtest5.translation))
+            tformtest8, mm8 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = AffineMap(SD\tformtest5.linear*SD, SD\tformtest5.translation))
         end
         flush(io)
         str = read(path, String)
@@ -178,13 +178,13 @@ end
     mm3 = nothing
 
     @test try
-        tformtest3, mm3 = qd_affine(testimage3, testimage4, mxshift; print_interval=typemax(Int)) #
+        tformtest3, mm3 = qd_affine(testimage3, testimage4, mxshift; print_interval=typemax(Int)) #
         false
     catch err
         true  # this should break
     end
 
-    tformtest4, mm4 = qd_affine(testimage3, testimage4, mxshift;  print_interval = typemax(Int), initial_tfm = init_tfm, fvalue = 1e-5) #
+    tformtest4, mm4 = qd_affine(testimage3, testimage4, mxshift;  print_interval = typemax(Int), initial_tfm = init_tfm, fvalue = 1e-5) #
     @test mm4 < 1e-4#this mismatch should be lower!
     @test isapprox(tformtest4.translation, [0.0, 10.0, 0.0])
 
@@ -201,13 +201,13 @@ end
     testimage2 = warp(testimage1, mytform, axes(testimage1))
 
 
-    tformtest1, mm1 = qd_affine(testimage2, testimage1, mxshift; print_interval=typemax(Int)) #
+    tformtest1, mm1 = qd_affine(testimage2, testimage1, mxshift; print_interval=typemax(Int)) #
     #as the max-rotation is set too low, this should give a bad mismatch, but should still work
     @test !(mm1 < 1e-8)
     @test !isapprox(tformtest1, mytform, atol = 0.1)
 
 
-    tformtest2, mm2 = qd_affine(testimage2, testimage1, mxshift; print_interval=typemax(Int), initial_tfm = mytform, fvalue = 1e-5) #
+    tformtest2, mm2 = qd_affine(testimage2, testimage1, mxshift; print_interval=typemax(Int), initial_tfm = mytform, fvalue = 1e-5) #
     #with the initial_tfm being the true tfm, this should give back the true rotation
 
     @test mm2 < 1e-8

@@ -50,7 +50,7 @@ end
     tfm = Translation(@SVector([14.3, 17.6]))
     fixed, moving = fixedmov(img, tfm)
     mxshift = (100,100) #make sure this isn't too small
-    tform, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, rtol=0, fvalue=0.0003)
+    tform, mm = qd_translate(fixed, moving, mxshift; maxevals=1000, rtol=0, fvalue=0.0003)
     tfmtest(tfm, tform)
 
     #Rigid transform
@@ -60,13 +60,13 @@ end
     mxshift = (100,100) #make sure this isn't too small
     mxrot = (0.5,)
     minwidth_rot = fill(0.002, 3)
-    tform, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002)
+    tform, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, tform)
     #with anisotropic sampling
     SD = Matrix(Diagonal([0.5; 1.0]))
     tfm = Translation(@SVector([14.3, 17.8]))∘LinearMap(SD\RotMatrix(0.3)*SD)
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002)
+    tform, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, arrayscale(tform, SD))
 
     #Affine transform
@@ -77,7 +77,7 @@ end
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
     mxshift = (100,100) #make sure this isn't too small
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=1000, rtol=0, fvalue=0.0002)
+    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=1000, rtol=0, fvalue=0.0002)
     tfmtest(tfm, tform)
 
     #with anisotropic sampling
@@ -87,7 +87,7 @@ end
     tfm = AffineMap(tfm.linear*scale, tfm.translation)
     tfm = arrayscale(tfm, SD)
     fixed, moving = fixedmov(centered(img), tfm)
-    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=10000, rtol=0, fvalue=0.0002, ndmax = 0.25)
+    tform, mm = qd_affine(fixed, moving, mxshift; SD = SD, maxevals=10000, rtol=0, fvalue=0.0002, ndmax = 0.25)
     tform2 = arrayscale(tform, SD)
     tfmtest(tfm, tform2)
 end #tests with standard images
