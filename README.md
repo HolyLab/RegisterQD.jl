@@ -1,8 +1,6 @@
 # RegisterQD
 
-[![Build Status](https://travis-ci.com/HolyLab/RegisterQD.jl.svg?branch=master)](https://travis-ci.com/HolyLab/RegisterQD.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/o82s9bc4m8lgmgf5?svg=true)](https://ci.appveyor.com/project/Cody-G/registerqd-jl)
-[![codecov](https://codecov.io/gh/HolyLab/RegisterQD.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/HolyLab/RegisterQD.jl)
+[![CI](https://github.com/HolyLab/RegisterQD.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/HolyLab/RegisterQD.jl/actions/workflows/CI.yml)[![codecov](https://codecov.io/gh/HolyLab/RegisterQD.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/HolyLab/RegisterQD.jl)
 
 RegisterQD performs image registration using the global optimization routine [QuadDIRECT](https://github.com/timholy/QuadDIRECT.jl).
 Unlike many other registration packages, this is not "greedy" descent based on an initial guess---it attempts to find the globally-optimal alignment of your images.
