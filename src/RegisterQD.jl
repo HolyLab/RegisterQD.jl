@@ -1,8 +1,8 @@
 module RegisterQD
 
 using Images, CoordinateTransformations, QuadDIRECT
-using RegisterMismatch
-using RegisterCore #just for indmin_mismatch?
+using RegisterMismatchCommon 
+using RegisterCore 
 using RegisterDeformation, PaddedViews, MappedArrays
 using Rotations
 using Interpolations, CenterIndexedArrays, StaticArrays, OffsetArrays

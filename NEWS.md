@@ -1,3 +1,9 @@
+# version 3.0
+
+## Breaking changes
+
+- RegisterQD is being updated to incorporate GPU processing. Use RegisterMismatch before RegisterQD for CPU methods, and RegisterMismatchCuda for GPU methods. Note that loading both will cause method conflicts. 
+
 # version 0.2
 
 ## Breaking changes

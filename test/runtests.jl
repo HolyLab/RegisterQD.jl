@@ -1,5 +1,5 @@
 using ImageMagick
-using RegisterQD
+using RegisterQD, RegisterMismatch
 using Test
 
 include("util.jl")

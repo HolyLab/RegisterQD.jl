@@ -5,6 +5,9 @@
 RegisterQD performs image registration using the global optimization routine [QuadDIRECT](https://github.com/timholy/QuadDIRECT.jl).
 Unlike many other registration packages, this is not "greedy" descent based on an initial guess---it attempts to find the globally-optimal alignment of your images.
 
+This package allows users to choose to between using CPU and GPU processing by first using either RegisterMismatch (CPU) or RegisterMismatchCuda (GPU), which contain critical overlapping functions that RegisterQD will not function without a version of. 
+In the current absense of Github resources for GPU code, "gpu_test.jl" should be run on your personal machine as required. 
+
 This package exports the following registration functions:
 - `qd_translate`: register images by shifting one with respect to another (translations only)
 - `qd_rigid`: register images using rotations and translations
