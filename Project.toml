@@ -19,8 +19,12 @@ Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+AxisArrays = "0.3, 0.4"
 CenterIndexedArrays = "0.2"
 CoordinateTransformations = "0.5, 0.6"
+Distributions = "0.20, 0.21, 0.22, 0.23, 0.24, 0.25"
+ImageMagick = "0.7, 1"
+ImageMetadata = "0.9"
 Images = "0.20, 0.21, 0.22, 0.23, 0.24, 0.25"
 Interpolations = "0.12, 0.13"
 MappedArrays = "0.2, 0.3, 0.4"
@@ -32,6 +36,8 @@ RegisterDeformation = "0.3, 0.4"
 RegisterMismatch = "0.3, 0.4"
 Rotations = "0.12, 0.13, 1"
 StaticArrays = "0.11, 0.12, 1"
+TestImages = "0.5, 0.6, 1"
+Unitful = "0.17, 0.18, 1"
 julia = "1"
 
 [extras]
@@ -39,6 +45,7 @@ AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 ImageMetadata = "bc367c6b-8a6b-528e-b4bd-a4b897500b49"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 RegisterMismatch = "3c0dd727-6833-5f5d-a1e8-c0d421935c74"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
@@ -46,4 +53,4 @@ TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [targets]
-test = ["Test", "ImageMagick", "TestImages", "Random", "AxisArrays", "ImageMetadata", "Unitful", "Distributions", "RegisterMismatch"]
+test = ["Test", "ImageMagick", "TestImages", "Random", "AxisArrays", "ImageMetadata", "Unitful", "Distributions", "LinearAlgebra", "RegisterMismatch"]

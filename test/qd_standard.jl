@@ -8,7 +8,6 @@ using RegisterQD.Images
 using RegisterQD.CoordinateTransformations
 using RegisterQD.Rotations
 using RegisterQD.OffsetArrays
-using RegisterQD.RegisterMismatch
 
 using Test, TestImages
 using Random

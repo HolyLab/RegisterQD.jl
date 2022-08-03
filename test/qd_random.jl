@@ -4,7 +4,6 @@ using RegisterQD.Interpolations
 using RegisterQD.Images
 using RegisterQD.CoordinateTransformations
 using RegisterQD.Rotations
-using RegisterQD.RegisterMismatch
 using RegisterQD: _abs2
 using Random
 
