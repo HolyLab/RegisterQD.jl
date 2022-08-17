@@ -187,6 +187,7 @@ function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike};
     if initial_tfm == IdentityTransformation() || isrotation(initial_tfm.linear)
     else
         @show "WARNING: initial_tfm is not a rigid transformation"
+        # @warn "initial_tfm is not a rigid transformation"
     end
     fixed, moving = float(fixed), float(moving)
     if presmoothed

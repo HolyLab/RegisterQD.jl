@@ -1,3 +1,9 @@
+# version 3.0
+
+## Breaking changes
+
+- RegisterQD now requires an extra step because of enhancements that support either CPU and GPU processing. For CPU processing (formerly the only option), now you must manually load the [RegisterMismatch package](https://github.com/HolyLab/RegisterMismatch.jl): `using RegisterMismatch, RegisterQD`. For GPU processing, you should instead load the [RegisterMismatchCuda package](https://github.com/HolyLab/RegisterMismatchCuda.jl): `using RegisterMismatchCuda, RegisterQD`. *Note that loading both mismatch packages in the same session will cause method conflicts.* Both mismatch packages are registered in the publicly-available [HolyLabRegistry](https://github.com/HolyLab/HolyLabRegistry), and users are advised to add that registry. 
+
 # version 0.2
 
 ## Breaking changes

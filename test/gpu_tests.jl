@@ -1,16 +1,21 @@
-using RegisterQD
+using CUDA, RegisterMismatchCuda, RegisterQD
 using LinearAlgebra
 using ImageMagick
-using Distributions
+using Distributions #what is this?
 using RegisterQD.StaticArrays
 using RegisterQD.Interpolations
 using RegisterQD.Images
 using RegisterQD.CoordinateTransformations
 using RegisterQD.Rotations
 using RegisterQD.OffsetArrays
+using RegisterQD.RegisterMismatchCommon
 
-using Test, TestImages
-using Random
+using TestImages
+using Test
+
+# CUDA.GPUArrays.default_scalar_indexing[] = CUDA.GPUArrays.ScalarDisallowed
+# CUDA.GPUArrays.default_scalar_indexing[] = CUDA.GPUArrays.ScalarAllowed
+
 
 #Helper to generate test image pairs
 function fixedmov(img, tfm)
@@ -22,12 +27,12 @@ function fixedmov(img, tfm)
     return fixed, moving
 end
 
-#helpers to convert Transformations to AffineMaps
+#Helpers to convert Transformations to AffineMaps
 to_affine(tfm::Translation) = AffineMap(Matrix{Float64}(LinearAlgebra.I, length(tfm.translation), length(tfm.translation)), tfm.translation)
 to_affine(tfm::LinearMap) = AffineMap(Matrix{Float64}(LinearAlgebra.I, length(tfm.translation), length(tfm.translation)), tfm.translation)
 to_affine(tfm::AffineMap) = tfm
 
-#Helper to test that a found transform is (roughly) the inverse of the original transform
+#Helper to test that a found transform is (roughly) the inverse of the original transform. 
 function tfmtest(tfm, tfminv)
     comp = to_affine(tfm ∘ tfminv)  #should be the identity transform
     diagtol = 0.005
@@ -35,13 +40,43 @@ function tfmtest(tfm, tfminv)
     vtol = 0.1
     @test all(x->(1-diagtol < x < 1+diagtol), diag(comp.linear))
     @test all(x->(-offdiagtol < x < offdiagtol), comp.linear.-Matrix(Diagonal(diag(comp.linear))))
-    @test all(abs.(comp.translation) .< vtol)
+    @test all(x-> x.<vtol, abs.(comp.translation))
 end
 
-# tests with standard images
-# (Also, unlike the tests above these tests set up the problem so that the correct
-# answer to is the inverse of an input transformation.  This seems to catch
-# a different set of errors than the tests above)
+# helper for wrapping CuArrays in Offset Arrays
+# cu_wrap(img::OffsetArray) = OffsetArray(CuArray(img.parent), img.offsets)
+# cu_wrap(img) = CuArray(img)
+
+#rigid tests 
+img = Float32.(testimage("cameraman"))
+SD = Matrix{Float64}(LinearAlgebra.I, 2, 2)
+tfm = Translation(@SVector([14, 17]))∘LinearMap(RotMatrix(0.3)) #no distortion for now
+# fixed, moving = cu_wrap.(fixedmov(centered(img), tfm));
+fixed, moving = fixedmov(centered(img), tfm)
+mxshift = (100,100) #make sure this isn't too small
+mxrot = (0.5,)
+minwidth_rot = fill(0.002, 3)
+
+
+tform, mm = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD, maxevals=1000, rtol=0, fvalue=0.0002);
+
+tfmtest(tfm, tform) 
+@test mm<0.001
+
+
+img3D = Float32.(testimage("mri-stack"))
+SD3D = Matrix{Float64}(LinearAlgebra.I, 3,3 )
+tfm3D = Translation(@SVector([15, 10, 2]))∘LinearMap(RotXYZ(0.05, 0.02, 0)) #no distortion for now
+fixed, moving = fixedmov(centered(img3D), tfm3D)
+mxshift = (30, 30, 5) #make sure this isn't too small
+mxrot = (0.1, 0.1, 0.1)
+minwidth_rot = fill(0.002, 3) 
+
+tform2, mm2 = qd_rigid(fixed, moving, mxshift, mxrot; SD=SD3D, maxevals=1000, rtol=0, fvalue=0.0002);
+tfmtest(tfm3D, tform2) 
+@test mm2<0.01
+
+#Coppied over from qd_random
 @testset "QuadDIRECT tests with standard images" begin
     img = testimage("cameraman");
 
