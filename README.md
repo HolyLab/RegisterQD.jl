@@ -5,7 +5,7 @@
 RegisterQD performs image registration using the global optimization routine [QuadDIRECT](https://github.com/timholy/QuadDIRECT.jl).
 Unlike many other registration packages, this is not "greedy" descent based on an initial guess---it attempts to find the globally-optimal alignment of your images.
 
-This package allows users to choose to between using CPU and GPU processing by first using either RegisterMismatch (CPU) or RegisterMismatchCuda (GPU), which contain critical overlapping functions that RegisterQD will not function without a version of. 
+To use this package, users must choose between using either the CPU or the GPU. For CPU processing, you must manually load the [RegisterMismatch package](https://github.com/HolyLab/RegisterMismatch.jl): `using RegisterMismatch, RegisterQD`. For GPU processing, you should instead load the [RegisterMismatchCuda package](https://github.com/HolyLab/RegisterMismatchCuda.jl): `using RegisterMismatchCuda, RegisterQD`. *Note that loading both mismatch packages in the same session will cause method conflicts.* Both mismatch packages are registered in the publicly-available [HolyLabRegistry](https://github.com/HolyLab/HolyLabRegistry), and users are advised to add that registry. 
 In the current absense of Github resources for GPU code, "gpu_test.jl" should be run on your personal machine as required. 
 
 This package exports the following registration functions:
