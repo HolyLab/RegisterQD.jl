@@ -1,7 +1,9 @@
 using RegisterQD
 using RegisterQD.StaticArrays
 using RegisterQD.Interpolations
-using RegisterQD.Images
+using RegisterQD.ImageCore
+using RegisterQD.ImageTransformations
+using RegisterQD.ImageFiltering
 using RegisterQD.CoordinateTransformations
 using RegisterQD.Rotations
 using RegisterQD: _abs2

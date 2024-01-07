@@ -1,14 +1,16 @@
 module RegisterQD
 
-using Images, CoordinateTransformations, QuadDIRECT
-using RegisterMismatchCommon 
-using RegisterCore 
+using ImageCore, ImageTransformations, ImageFiltering
+using CoordinateTransformations
+using QuadDIRECT
+using RegisterMismatchCommon
+using RegisterCore
 using RegisterDeformation, PaddedViews, MappedArrays
 using Rotations
 using Interpolations, CenterIndexedArrays, StaticArrays, OffsetArrays
 using LinearAlgebra
 
-using Images.ImageTransformations: CornerIterator
+using ImageTransformations: CornerIterator
 
 const VecLike = Union{AbstractVector{<:Number}, Tuple{Number, Vararg{Number}}}
 
