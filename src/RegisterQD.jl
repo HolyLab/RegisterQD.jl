@@ -37,7 +37,7 @@ function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike},
 end
 
 function qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD;
-                   thresh=0.5*sum(_abs2.(fixed[.!(isnan.(fixed))])),
+                   thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    print_interval=100,
                    kwargs...)
