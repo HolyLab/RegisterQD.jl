@@ -1,14 +1,16 @@
 module RegisterQD
 
-using Images, CoordinateTransformations, QuadDIRECT
-using RegisterMismatchCommon 
-using RegisterCore 
+using ImageCore, ImageTransformations, ImageFiltering
+using CoordinateTransformations
+using QuadDIRECT
+using RegisterMismatchCommon
+using RegisterCore
 using RegisterDeformation, PaddedViews, MappedArrays
 using Rotations
 using Interpolations, CenterIndexedArrays, StaticArrays, OffsetArrays
 using LinearAlgebra
 
-using Images.ImageTransformations: CornerIterator
+using ImageTransformations: CornerIterator
 
 const VecLike = Union{AbstractVector{<:Number}, Tuple{Number, Vararg{Number}}}
 
@@ -35,7 +37,7 @@ function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike},
 end
 
 function qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD;
-                   thresh=0.5*sum(_abs2.(fixed[.!(isnan.(fixed))])),
+                   thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    print_interval=100,
                    kwargs...)

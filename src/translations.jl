@@ -16,7 +16,7 @@ end
 function qd_translate_fine(fixed, moving;
                            initial_tfm=IdentityTransformation(),
                            minwidth=fill(0.01, ndims(fixed)),
-                           thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
+                           thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                            kwargs...)
     f(x) = translate_mm_slow(x, fixed, moving, thresh; initial_tfm=initial_tfm)
     upper = fill(1.0, ndims(fixed))
@@ -56,7 +56,7 @@ that can occur due to normalization when the transformed `moving` doesn't fully 
 """
 function qd_translate(fixed, moving, mxshift;
                       presmoothed=false,
-                      thresh=0.1*sum(_abs2.(fixed[.!(isnan.(fixed))])),
+                      thresh=0.1*sum(abs2.(fixed[.!(isnan.(fixed))])),
                       initial_tfm=IdentityTransformation(),
                       minwidth=fill(0.01, ndims(fixed)), print_interval=100, crop=false, kwargs...)
     fixed, moving = float(fixed), float(moving)
