@@ -7,6 +7,7 @@ using RegisterQD.ImageTransformations
 using RegisterQD.ImageFiltering
 using RegisterQD.CoordinateTransformations
 using RegisterQD.Rotations
+using Test
 
 g = 0.2:0.2:1.2
 gradcube = g .* reshape(g, 1, 6) .* reshape(g, 1, 1, 6)
@@ -146,21 +147,13 @@ end
     @test !isrotation(SD*tformtest77.linear*inv(SD))
     #fails due to specific error in qd_rigid_fine
 
-    # a non rigid initial_tfm does not return a rigid transformation and prints an error message (?)
-    tformtest8, mm8 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = AffineMap(SD\tformtest5.linear*SD, SD\tformtest5.translation))
+    # a non rigid initial_tfm does not return a rigid transformation and prints a warning
+    tformtest8, mm8 = @test_logs (:warn, "initial_tfm is not a rigid transformation") begin
+        qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = AffineMap(SD\tformtest5.linear*SD, SD\tformtest5.translation))
+    end
     @test mm8 <1e-4
     @test isapprox(tformtest8, mytform, atol = 1)
     @test !isrotation(tformtest8.linear)
-
-    mktemp() do path, io
-        redirect_stdout(io) do
-            tformtest8, mm8 = qd_rigid(testimage6, testimage5, mxshift, mxrot2; SD=SD, print_interval=typemax(Int), initial_tfm = AffineMap(SD\tformtest5.linear*SD, SD\tformtest5.translation))
-        end
-        flush(io)
-        str = read(path, String)
-        @test !isempty(str)
-    end
-
 end
 
 @testset "Test initial_tfm improves translational alignment for affine" begin

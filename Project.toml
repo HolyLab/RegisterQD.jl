@@ -1,6 +1,6 @@
 name = "RegisterQD"
 uuid = "ac24ea0c-1830-11e9-18d4-81f172323054"
-version = "0.3.1"
+version = "0.3.2"
 
 [deps]
 CenterIndexedArrays = "46a7138f-0d70-54e1-8ada-fb8296f91f24"
@@ -33,7 +33,7 @@ Interpolations = "0.12, 0.13, 0.14, 0.15"
 MappedArrays = "0.2, 0.3, 0.4"
 OffsetArrays = "0.11, 1"
 PaddedViews = "0.4, 0.5"
-QuadDIRECT = "0.0, 0.1"
+QuadDIRECT = "0.1"
 RegisterCore = "0.1, 0.2"
 RegisterDeformation = "0.3, 0.4"
 RegisterMismatch = "0.3, 0.4"
@@ -41,7 +41,7 @@ Rotations = "0.12, 0.13, 1"
 StaticArrays = "0.11, 0.12, 1"
 TestImages = "0.5, 0.6, 1"
 Unitful = "0.17, 0.18, 1"
-julia = "1"
+julia = "1.6"
 
 [extras]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
