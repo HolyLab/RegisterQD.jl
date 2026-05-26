@@ -24,6 +24,18 @@ The goal is a coherent public surface that feels natural to a user who learned J
 ## Decisions
 <!-- Answers to `decide` chunks land here, with the chunk ID. -->
 
+- **CHUNK-007** (2026-05-26): Keep the names `minwidth_rot` / `minwidth_mat`; do **not**
+  rename to `minwidth`. Rationale: the suffixed names are not synonyms for the full
+  `minwidth` — they denote the *rotation subspace* and *linear-map subspace* minwidths
+  respectively. In the fine functions a local `minwidth = vcat(minwidth_shfts, minwidth_rot)`
+  (rigid.jl:115) / `vcat(minwidth_shfts, minwidth_mat)` (affine.jl:133) builds the full
+  vector, so the parameter genuinely names only a subspace. Renaming would collide with
+  that local and lose information. On the public surface only `qd_translate` (`minwidth`,
+  full) and `qd_rigid` (`minwidth_rot`, rotation-only) expose a minwidth keyword; `qd_affine`
+  exposes none. The `_rot` suffix usefully tells the user "rotation resolution only."
+  Action: documentation-only — clarify the suffix semantics in docstrings. Rename portion
+  of the chunk **dropped**. Non-breaking.
+
 ## Chunks
 
 ### CHUNK-001: preflight
@@ -112,8 +124,8 @@ The goal is a coherent public surface that feels natural to a user who learned J
 - **Description**: Standardize keyword names in the semi-public functions. Proposed convention: `minwidth` always names the keyword, with the *meaning* derived from context (the parameter space of the function). Rename `minwidth_mat` → `minwidth` in `qd_affine_fine`. Check `minwidth_rot` in `qd_rigid` — if it is exposed as a keyword, rename to `minwidth` there too. If any of these keywords are user-facing (appear in the exported `qd_rigid`/`qd_affine` docstrings), update the docs accordingly.
 - **Depends on**: CHUNK-001
 - **Verification**: grep for `minwidth_rot` and `minwidth_mat` in tests; update any test that uses them by keyword name; existing tests pass
-- **Status**: `not-started`
-- **Notes**: `minwidth_rot` is also an exported keyword of `qd_rigid` (it appears in its signature). If renaming it, that *would* be breaking for callers who pass `minwidth_rot=` explicitly. Implementer should check and, if breaking, flag for a version bump addendum or keep the name and only unify the internal helper.
+- **Status**: `complete`
+- **Notes**: Resolved as **documentation-only** (see Decisions / CHUNK-007). Investigation found the suffixed names are *not* synonyms for `minwidth`: they name the rotation- and linear-map subspaces, which are combined with a fixed translation minwidth inside the fine functions (`vcat` at rigid.jl:115, affine.jl:133). Renaming would collide with that local `minwidth` and lose information. Kept all three names; added subspace-clarifying notes to the `qd_rigid` docstring (`minwidth_rot`) and the `qd_affine_fine` docstring (`minwidth_mat`). No code change → tests unaffected; no test grep edits needed since nothing was renamed. Package reloads clean; docstrings render; ambiguities remain 0. Rename portion dropped.
 
 ---
 
@@ -160,5 +172,7 @@ The goal is a coherent public surface that feels natural to a user who learned J
 **Session 2026-05-26 (d)**: Implemented CHUNK-005 (thresh-default-documentation). Determined via git history that `qd_affine`'s `0.5×` thresh default is intentional (coexisted deliberately with `0.1×` internal helpers since the first commit; affine's extra DOF justify requiring more overlap). Kept the value, added an explanatory comment at `src/affine.jl:187`, and documented the `thresh` default in the `qd_affine` and `qd_translate` docstrings (`qd_rigid` already had it). No value change, no new test. Ambiguities remain 0. Next up: CHUNK-006 (default-minrot-array-overload).
 
 **Session 2026-05-26 (e)**: Implemented CHUNK-006 (default-minrot-array-overload). Added an `AbstractArray` convenience overload of `default_minrot` (`src/util.jl`) that forwards to the `CartesianIndices` method; updated the docstring to show both forms. Corrected a stale handoff note — `default_minrot` does exist; it was confused with `default_minwidth_rot`. No ambiguity (`CartesianIndices <: AbstractArray`). Added 3 equivalence tests; 18/18 util tests pass, ambiguities 0. Next up: CHUNK-007 (minwidth-naming-consistency).
+
+**Session 2026-05-26 (f)**: Implemented CHUNK-007 (minwidth-naming-consistency) as **documentation-only**. Investigation revealed `minwidth_rot`/`minwidth_mat` are not synonyms for `minwidth` — they name the rotation/linear-map *subspaces*, combined with a fixed translation minwidth via `vcat` in the fine functions. Per user decision, kept all three names (renaming would collide with the local `minwidth` and lose subspace info) and instead documented the suffix semantics in the `qd_rigid` and `qd_affine_fine` docstrings. Non-breaking; no code change; ambiguities remain 0. This completes the `semi-public-polish` cluster's first chunk (1 of 2). Next up: CHUNK-008 (veclike-public-declaration).
 
 ## Open Questions

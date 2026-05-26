@@ -137,8 +137,12 @@ as a vector or tuple.
 `mxrot` is the maximum-allowed rotation, in radians for 2d or
 [quaternion-units](https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation) for 3d.
 See [`RegisterQD.rot`](@ref) for more information.
-`minwidth_rot` optionally specifies the lower limit of resolution for the rotation;
-the default is a rotation that moves corner elements by 0.1 pixel.
+`minwidth_rot` optionally specifies the lower limit of resolution for the *rotation*
+parameters only; the translation resolution is fixed internally and is not user-adjustable.
+The default is a rotation that moves corner elements by 0.1 pixel. The `_rot` suffix
+distinguishes this from the full-search-space `minwidth` accepted by [`qd_translate`](@ref):
+here it names just the rotation subspace, which is combined internally with the
+(fixed) translation resolution.
 
 `kwargs...` can include any keyword argument that can be passed to `QuadDIRECT.analyze`.
 It's recommended that you pass your own stopping criteria when possible

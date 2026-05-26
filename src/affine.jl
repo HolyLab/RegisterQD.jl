@@ -113,6 +113,12 @@ Compute an affine transformation `tfm` that minimizes the mismatch between
 This only allows small translations (just a couple of pixels).
 As a consequence, any large translations must be supplied with reasonable accuracy in
 `initial_tfm` (see [`RegisterQD.qd_affine_coarse`](@ref)).
+
+`minwidth_mat` optionally specifies the lower limit of resolution for the *linear-map*
+parameters only; the translation resolution is fixed internally. The `_mat` suffix
+distinguishes this from the full-search-space `minwidth` accepted by
+[`RegisterQD.qd_affine_coarse`](@ref): here it names just the linear-map subspace, which
+is combined internally with the (fixed) translation resolution.
 """
 function qd_affine_fine(fixed, moving, linmins, linmaxs;
                         SD=I,
