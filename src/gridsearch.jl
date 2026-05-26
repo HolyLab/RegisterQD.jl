@@ -18,36 +18,36 @@ pixel spacing.
 function grid_rotations(maxradians, rgridsz, SD)
     rgridsz = [rgridsz...]
     maxradians = [maxradians...]
-    nd = size(SD,1)
+    nd = size(SD, 1)
     if !all(isodd, rgridsz)
         @warn("rgridsz should be odd; rounding up to the next odd integer")
     end
-    for i = 1:length(rgridsz)
+    for i in 1:length(rgridsz)
         if !isodd(rgridsz[i])
             rgridsz[i] = max(round(Int, rgridsz[i]) + 1, 1)
         end
     end
-    grid_radius = map(x->div(x,2), rgridsz)
+    grid_radius = map(x -> div(x, 2), rgridsz)
     if nd > 2
-        gridcoords = [range(-grid_radius[x]*maxradians[x], stop=grid_radius[x]*maxradians[x], length=rgridsz[x]) for x=1:nd]
+        gridcoords = [range(-grid_radius[x] * maxradians[x], stop = grid_radius[x] * maxradians[x], length = rgridsz[x]) for x in 1:nd]
         rotation_angles = Iterators.product(gridcoords...)
     else
-        rotation_angles = range(-grid_radius[1]*maxradians[1], stop=grid_radius[1]*maxradians[1], length=rgridsz[1])
+        rotation_angles = range(-grid_radius[1] * maxradians[1], stop = grid_radius[1] * maxradians[1], length = rgridsz[1])
     end
-    axmat = Matrix{Float64}(I,nd,nd)
-    axs = map(x->axmat[:,x], 1:nd)
+    axmat = Matrix{Float64}(I, nd, nd)
+    axs = map(x -> axmat[:, x], 1:nd)
     tfeye = tformeye(nd)
     output = typeof(tfeye)[]
     for ra in rotation_angles
         if nd > 2
-            euler_rots = map(x->tformrotate(x...), zip(axs, ra))
-            rot = foldr(∘, euler_rots, init=tfeye)
+            euler_rots = map(x -> tformrotate(x...), zip(axs, ra))
+            rot = foldr(∘, euler_rots, init = tfeye)
         elseif nd == 2
             rot = tformrotate(ra)
         else
             error("Unsupported dimensionality")
         end
-        push!(output, AffineMap(SD*rot.linear/SD , zeros(nd))) #account for sample spacing
+        push!(output, AffineMap(SD * rot.linear / SD, zeros(nd))) #account for sample spacing
     end
     return output
 end
@@ -61,7 +61,7 @@ best rotation and shift out of the values searched, along with the mismatch valu
 For more on how the arguments `maxradians`, `rgridsz`, and `SD` influence the search, see the documentation for
 `grid_rotations`.
 """
-function rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz; SD = Matrix{Float64}(I,ndims(fixed),ndims(fixed)))
+function rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz; SD = Matrix{Float64}(I, ndims(fixed), ndims(fixed)))
     rgridsz = [rgridsz...]
     nd = ndims(moving)
     @assert nd == ndims(fixed)
@@ -74,9 +74,9 @@ function rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz; SD = 
         #calc mismatch
         #mm = mismatch(fixed, new_moving, maxshift; normalization=:pixels)
         mm = mismatch(fixed, new_moving, maxshift)
-        thresh = 0.1*maximum(x->x.denom, mm)
+        thresh = 0.1 * maximum(x -> x.denom, mm)
         best_i = argmin_mismatch(mm, thresh)
-        cur_best =ratio(mm[best_i], 0.0)
+        cur_best = ratio(mm[best_i], 0.0)
         if cur_best < best_mm
             best_mm = cur_best
             best_rot = rot

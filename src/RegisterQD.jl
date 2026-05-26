@@ -21,12 +21,12 @@ include("affine.jl")
 include("gridsearch.jl")
 
 export qd_translate,
-        qd_rigid,
-        qd_affine,
-        arrayscale,
-        grid_rotations,
-        rotation_gridsearch,
-        getSD,
-        qsmooth
+    qd_rigid,
+    qd_affine,
+    arrayscale,
+    grid_rotations,
+    rotation_gridsearch,
+    getSD,
+    qsmooth
 
 end # module
