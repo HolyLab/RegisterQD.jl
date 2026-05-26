@@ -60,8 +60,8 @@ The goal is a coherent public surface that feels natural to a user who learned J
 - **Description**: Change the convenience overload `qsmooth(img::AbstractArray)` to default to `float(eltype(img))` instead of hardcoding `Float32`. That is, replace the body with `qsmooth(float(eltype(img)), img)`. Users who relied on `Float32` output can call `qsmooth(Float32, img)` explicitly.
 - **Depends on**: CHUNK-001
 - **Verification**: add tests confirming `Float64` input → `Float64` output and `Float32` input → `Float32` output; existing tests pass
-- **Status**: `not-started`
-- **Notes**: The typed overload `qsmooth(::Type{T}, img)` already exists, so no new code paths are needed — only the default changes.
+- **Status**: `complete`
+- **Notes**: Changed `qsmooth(img::AbstractArray)` default from `Float32` to `float(eltype(img))` (src/util.jl:197) and updated the docstring default annotation (line 191). Added "qsmooth eltype" testset in `test/util.jl`. Discovery: `T` sets the *kernel/compute* eltype, and `imfilter` promotes against the image eltype — so `qsmooth(Float32, img::Array{Float64})` already returned `Float64`, not `Float32`. The finding's "always returns Float32" claim only held for inputs not wider than Float32 (e.g. Float16, NormedFixed). The third test asserts the true semantics: explicit `T=Float64` on a Float32 image widens to Float64. Ambiguity count remains 0.
 
 ---
 
@@ -152,5 +152,7 @@ The goal is a coherent public surface that feels natural to a user who learned J
 <!-- The implementer appends an entry after each session. -->
 
 **Session 2026-05-26**: Completed CHUNK-001 (preflight) and CHUNK-002 (rotation-gridsearch-SD-to-keyword). Preflight fixed two pre-existing RegisterCore/RegisterMismatch v1 compat breaks. CHUNK-002 moved `SD` from positional to keyword in `rotation_gridsearch`; docstring and test updated. Ambiguity count: 0. Next up: CHUNK-003 (qsmooth-default-eltype).
+
+**Session 2026-05-26 (b)**: Implemented CHUNK-003 (qsmooth-default-eltype). Changed the `qsmooth(img)` convenience overload to default to `float(eltype(img))` instead of hardcoded `Float32`, updated the docstring, and added a "qsmooth eltype" testset. Noted that `T` controls the kernel/compute eltype (output promotes against the image), so the original "always Float32" behavior only applied to sub-Float32 inputs. Ambiguity count: 0. Next up: CHUNK-004 (remove-deprecated-stubs).
 
 ## Open Questions

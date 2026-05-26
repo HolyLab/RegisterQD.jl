@@ -58,7 +58,14 @@ end
     @test size(getSD(timedarray)) == (2,2)
 end
 
-
+@testset "qsmooth eltype" begin
+    img64 = rand(Float64, 8, 8)
+    @test eltype(qsmooth(img64)) === Float64
+    img32 = rand(Float32, 8, 8)
+    @test eltype(qsmooth(img32)) === Float32
+    # explicit T still widens the compute/output eltype
+    @test eltype(qsmooth(Float64, img32)) === Float64
+end
 
 #TODO add a testset for other support functions
 #rotations
