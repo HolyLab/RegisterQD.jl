@@ -1,6 +1,7 @@
 using RegisterQD
 using RegisterQD.CoordinateTransformations
 using RegisterQD.RegisterDeformation
+using LinearAlgebra: I
 using Test
 
 @testset "Grid search rigid registration" begin
@@ -10,7 +11,9 @@ using Test
     b = transform(a, tformtranslate([2.0;0.0]) ∘ tformrotate(pi/6))
     tfm0 = tformtranslate([-2.0;0.0]) ∘ tformrotate(-pi/6)
     #note: maxshift must be GREATER than the true shift in order to find the true shift
-    tfm, mm = RegisterQD.rotation_gridsearch(a, b, (11,11), [pi/6], [11])
+    # SD is now a keyword argument (was positional in v0.x)
+    SD2 = Matrix{Float64}(I, 2, 2)
+    tfm, mm = RegisterQD.rotation_gridsearch(a, b, (11,11), [pi/6], [11]; SD=SD2)
     @test tfm.translation == tfm0.translation
     @test tfm.linear == tfm0.linear
 
