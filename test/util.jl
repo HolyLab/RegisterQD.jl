@@ -22,6 +22,11 @@ using Unitful: μm, mm, cm, km, s
     ci = CartesianIndices(img)
     θ = RegisterQD.default_minrot(ci)
     @test θ ≈ 0.1/sqrt(3^2 + 10^2 + 5^2) rtol=1e-3
+    # array overload matches the CartesianIndices form
+    SD = [1 0 0; 0 2 0; 0 0 3]
+    @test RegisterQD.default_minrot(img) == RegisterQD.default_minrot(CartesianIndices(img))
+    @test RegisterQD.default_minrot(img, SD) == RegisterQD.default_minrot(CartesianIndices(img), SD)
+    @test RegisterQD.default_minrot(img, SD; Δc=0.2) == RegisterQD.default_minrot(CartesianIndices(img), SD; Δc=0.2)
 end
 
 @testset "getSD" begin
