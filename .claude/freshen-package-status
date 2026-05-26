@@ -1,7 +1,7 @@
 DONE: design review
 DONE: API review
 DONE: update .gitignore
-TODO: format with runic
+DONE: format with runic
 TODO: add Aqua.jl
 TODO: remove deprecations
 TODO: add ExplicitImports.jl
