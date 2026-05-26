@@ -9,8 +9,8 @@ end
 function translate_mm_slow(params, fixed, moving, thresh; initial_tfm=IdentityTransformation())
     tfm = initial_tfm ∘ tfmshift(params, moving)
     moving, fixed = warp_and_intersect(moving, fixed, tfm)
-    mm = mismatch0(fixed, moving; normalization=:intensity)
-    return ratio(mm, thresh, Inf)
+    mm = mismatch_zeroshift(fixed, moving; normalization=:intensity)
+    return ratio(mm, thresh; fillval=Inf)
 end
 
 function qd_translate_fine(fixed, moving;
