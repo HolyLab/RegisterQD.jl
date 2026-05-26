@@ -188,13 +188,13 @@ Create a smoothed version of `img`, smoothing with the kernel of a quadratic B-s
 Use this on your `fixed` image in preparation for registration, and pass `presmoothed`
 as an option. (Do not smooth `moving`.)
 
-`T` allows you to specify the output eltype (default `Float32`).
+`T` allows you to specify the output eltype (default `float(eltype(img))`).
 """
 function qsmooth(::Type{T}, img::AbstractArray{T2,N}) where {T,N,T2}
     kern1 = centered(T[1/8, 3/4, 1/8])   # quadratic B-spline kernel
     return imfilter(img, kernelfactors(ntuple(i->kern1, Val(N))))
 end
-qsmooth(img::AbstractArray) = qsmooth(Float32, img)
+qsmooth(img::AbstractArray) = qsmooth(float(eltype(img)), img)
 
 function qinterp(::Type{T}, moving) where T
     widen1(ax) = first(ax)-1:last(ax)+1
