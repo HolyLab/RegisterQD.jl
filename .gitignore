@@ -2,5 +2,6 @@
 *.jl.*.cov
 *.jl.mem
 Manifest.toml
+Manifest-v*.toml
 test/Manifest.toml
 .vscode/
