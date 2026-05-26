@@ -99,8 +99,8 @@ The goal is a coherent public surface that feels natural to a user who learned J
 - **Description**: Add a convenience overload `default_minrot(img::AbstractArray, SD=I; Δc=0.1) = default_minrot(CartesianIndices(img), SD; Δc)` so users can pass the image directly. The existing `CartesianIndices` method remains unchanged.
 - **Depends on**: CHUNK-001
 - **Verification**: add a test calling `default_minrot(img, SD)` and confirming it matches `default_minrot(CartesianIndices(img), SD)`
-- **Status**: `not-started`
-- **Notes**:
+- **Status**: `complete`
+- **Notes**: Correction to the prior session's handoff: `default_minrot` **does** exist (`src/util.jl:123`) — the earlier "naming mismatch" note conflated it with the separate `default_minwidth_rot` wrapper. No mismatch; the chunk targeted the right function. Added `default_minrot(img::AbstractArray, SD=I; Δc=0.1) = default_minrot(CartesianIndices(img), SD; Δc)` at `util.jl` after the `CartesianIndices` method, and updated the docstring to show both forms. No ambiguity: `CartesianIndices <: AbstractArray`, so the existing `CartesianIndices` method is strictly more specific. `default_minrot` is *not* exported (semi-public). Added 3 equivalence assertions to the `default_minwidth_rot` testset (plain / with SD / with Δc kwarg). 18/18 util tests pass; ambiguities remain 0.
 
 ---
 
@@ -158,5 +158,7 @@ The goal is a coherent public surface that feels natural to a user who learned J
 **Session 2026-05-26 (c)**: Implemented CHUNK-004 (remove-deprecated-stubs). Deleted the `# Deprecations` block (both always-`error()` stubs) from `src/RegisterQD.jl`. Verified the old positional signatures now raise `MethodError` instead of the hand-written `ErrorException`, no test exercised the stubs, ambiguities remain 0, and util.jl + qd_standard.jl pass. This completes the `deprecated-cleanup` cluster (1 of 1). Next up: CHUNK-005 (thresh-default-documentation).
 
 **Session 2026-05-26 (d)**: Implemented CHUNK-005 (thresh-default-documentation). Determined via git history that `qd_affine`'s `0.5×` thresh default is intentional (coexisted deliberately with `0.1×` internal helpers since the first commit; affine's extra DOF justify requiring more overlap). Kept the value, added an explanatory comment at `src/affine.jl:187`, and documented the `thresh` default in the `qd_affine` and `qd_translate` docstrings (`qd_rigid` already had it). No value change, no new test. Ambiguities remain 0. Next up: CHUNK-006 (default-minrot-array-overload).
+
+**Session 2026-05-26 (e)**: Implemented CHUNK-006 (default-minrot-array-overload). Added an `AbstractArray` convenience overload of `default_minrot` (`src/util.jl`) that forwards to the `CartesianIndices` method; updated the docstring to show both forms. Corrected a stale handoff note — `default_minrot` does exist; it was confused with `default_minwidth_rot`. No ambiguity (`CartesianIndices <: AbstractArray`). Added 3 equivalence tests; 18/18 util tests pass, ambiguities 0. Next up: CHUNK-007 (minwidth-naming-consistency).
 
 ## Open Questions

@@ -116,9 +116,11 @@ end
 
 """
     θ = default_minrot(ci::CartesianIndices, SD=I; Δc=0.1)
+    θ = default_minrot(img::AbstractArray, SD=I; Δc=0.1)
 
 Compute the rotation `θ` that results in largest change in coordinates
-of size `Δc` (in pixels) for any index in `ci`.
+of size `Δc` (in pixels) for any index in `ci`. When passed an array `img`,
+its `CartesianIndices` are used.
 """
 function default_minrot(ci::CartesianIndices, SD=I; Δc=0.1)
     L = -Inf
@@ -136,6 +138,8 @@ function default_minrot(ci::CartesianIndices, SD=I; Δc=0.1)
     ℓ = sqrt(λ)*Δc
     return 2*asin(ℓ/(2*L))
 end
+
+default_minrot(img::AbstractArray, SD=I; Δc=0.1) = default_minrot(CartesianIndices(img), SD; Δc)
 
 default_minwidth_rot(ci::CartesianIndices{2}, SD=I; kwargs...) =
     [default_minrot(ci, SD; kwargs...)]
