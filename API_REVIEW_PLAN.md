@@ -86,8 +86,8 @@ The goal is a coherent public surface that feels natural to a user who learned J
 - **Description**: Investigate whether the difference is intentional. If intentional, add a one-line comment in `affine.jl` next to the `thresh` default explaining why affine registration uses a looser threshold. If accidental, unify to `0.1 ×`. Either way, document the `thresh` keyword in the docstrings of `qd_translate`, `qd_rigid`, and `qd_affine` so users know what it controls.
 - **Depends on**: CHUNK-001
 - **Verification**: docstring review; no test needed unless the value changes
-- **Status**: `not-started`
-- **Notes**:
+- **Status**: `complete`
+- **Notes**: Determined the `0.5×` is **intentional**, not accidental. Evidence: the `0.5×` top-level default has existed since the first commit (109c460), where the author simultaneously wrote `0.1×` for the internal `qd_affine_coarse`/`qd_affine_fine` helpers in the same file — a deliberate split, not a typo; commit context ("poor optimization results") shows active threshold tuning. Rationale: `thresh` sets a *minimum* required overlap, and affine's extra DOF (scale/shear) make degenerate low-overlap solutions more likely, so requiring more overlap (50% vs 10%) is a sensible guard. Kept the value; added an explanatory comment at `src/affine.jl:187`. Corrected the plan's "looser threshold" wording — 0.5 is *stricter* (more overlap required). Documented the `thresh` default in the `qd_affine` (50%, with rationale) and `qd_translate` (10%) docstrings; `qd_rigid` already documented its 10% default so it was left unchanged. No value change → no new test (per verification clause). Package reloads clean; ambiguities remain 0.
 
 ---
 
@@ -156,5 +156,7 @@ The goal is a coherent public surface that feels natural to a user who learned J
 **Session 2026-05-26 (b)**: Implemented CHUNK-003 (qsmooth-default-eltype). Changed the `qsmooth(img)` convenience overload to default to `float(eltype(img))` instead of hardcoded `Float32`, updated the docstring, and added a "qsmooth eltype" testset. Noted that `T` controls the kernel/compute eltype (output promotes against the image), so the original "always Float32" behavior only applied to sub-Float32 inputs. Ambiguity count: 0. Next up: CHUNK-004 (remove-deprecated-stubs).
 
 **Session 2026-05-26 (c)**: Implemented CHUNK-004 (remove-deprecated-stubs). Deleted the `# Deprecations` block (both always-`error()` stubs) from `src/RegisterQD.jl`. Verified the old positional signatures now raise `MethodError` instead of the hand-written `ErrorException`, no test exercised the stubs, ambiguities remain 0, and util.jl + qd_standard.jl pass. This completes the `deprecated-cleanup` cluster (1 of 1). Next up: CHUNK-005 (thresh-default-documentation).
+
+**Session 2026-05-26 (d)**: Implemented CHUNK-005 (thresh-default-documentation). Determined via git history that `qd_affine`'s `0.5×` thresh default is intentional (coexisted deliberately with `0.1×` internal helpers since the first commit; affine's extra DOF justify requiring more overlap). Kept the value, added an explanatory comment at `src/affine.jl:187`, and documented the `thresh` default in the `qd_affine` and `qd_translate` docstrings (`qd_rigid` already had it). No value change, no new test. Ambiguities remain 0. Next up: CHUNK-006 (default-minrot-array-overload).
 
 ## Open Questions
