@@ -4,56 +4,62 @@
 API_REVIEW_PLAN.md — RegisterQD v1.0.0
 
 ## What was just completed
-CHUNK-006: default-minrot-array-overload
+CHUNK-007: minwidth-naming-consistency (resolved documentation-only)
 
-Added `default_minrot(img::AbstractArray, SD=I; Δc=0.1) =
-default_minrot(CartesianIndices(img), SD; Δc)` to `src/util.jl` (right after the
-existing `CartesianIndices` method) so callers can pass an image directly
-instead of wrapping it in `CartesianIndices`. Updated the docstring to show both
-forms. Added 3 equivalence assertions to the `default_minwidth_rot` testset.
+Investigated the three minwidth keyword names and found they are **not** synonyms:
+`minwidth` (full vector, in `qd_translate`/`qd_affine_coarse`), `minwidth_rot`
+(rotation subspace, in `qd_rigid` + helpers), and `minwidth_mat` (linear-map
+subspace, in `qd_affine_fine`). The fine functions build the full vector locally
+via `minwidth = vcat(minwidth_shfts, minwidth_rot|_mat)` (rigid.jl:115,
+affine.jl:133), so the suffixed parameter genuinely names only a subspace.
+Per the user's decision, kept all names and documented the suffix semantics in
+the `qd_rigid` and `qd_affine_fine` docstrings. No rename, no code change.
 
 ## Key decisions / shim choices
-- Non-breaking; the existing `CartesianIndices` method is untouched and remains
-  strictly more specific (`CartesianIndices <: AbstractArray`), so there is no
-  dispatch ambiguity — confirmed `detect_ambiguities` count stayed at 0.
-- `default_minrot` is **not** exported (semi-public); this overload is a
-  convenience for advanced/internal callers.
-- **Corrected a stale handoff note**: the previous session claimed there was a
-  naming mismatch (`default_minrot` vs `default_minwidth_rot`). There is no
-  mismatch — both functions exist; `default_minrot` (`util.jl:123`) computes the
-  angle, `default_minwidth_rot` (`util.jl:142`) wraps it into a per-dimension
-  vector. The chunk correctly targeted `default_minrot`.
+- **Renaming was rejected** (recorded in plan Decisions / CHUNK-007). A rename to
+  bare `minwidth` would collide with the local full-vector `minwidth` in the fine
+  functions and would be semantically misleading (loses the subspace meaning).
+- On the public surface only `qd_translate` (`minwidth`) and `qd_rigid`
+  (`minwidth_rot`) expose a minwidth keyword; `qd_affine` exposes none. The `_rot`
+  suffix is genuinely informative ("rotation resolution only").
+- Documentation-only ⇒ non-breaking; existing tests untouched (nothing renamed).
 
 ## State of the codebase
-- Files modified: `src/util.jl`, `test/util.jl`, `API_REVIEW_PLAN.md`,
-  `API_REVIEW_SESSION.md`
-- Test suite: util.jl 18/18 pass via MCP (15 original + 3 new)
+- Files modified: `src/rigid.jl` (docstring), `src/affine.jl` (docstring),
+  `API_REVIEW_PLAN.md`, `API_REVIEW_SESSION.md`
+- Test suite: not re-run (doc-only change; package loads via MCP, docstrings render)
 - Ambiguity count: 0 (delta from baseline: 0)
 - Staged but uncommitted: no (changes in working tree, not staged)
 
 ## Cluster status
 - SD-consistency: 1 of 1 complete
 - deprecated-cleanup: 1 of 1 complete
-- semi-public-polish: 0 of 2 complete (CHUNK-007, CHUNK-008 ready)
-- (CHUNK-005 and CHUNK-006 are cluster `none`, both complete)
+- semi-public-polish: 1 of 2 complete (CHUNK-008 remaining)
+- (CHUNK-005, CHUNK-006, CHUNK-007 are/were cluster `none` or now closed)
 
 ## Next chunk
-CHUNK-007: minwidth-naming-consistency — standardize the `minwidth_mat`
-(qd_affine_fine) / `minwidth_rot` (qd_rigid) keyword names toward `minwidth`.
-Breaking: potentially yes — see below.
+CHUNK-008: veclike-public-declaration — `VecLike` appears in the public `qd_rigid`
+signature but is unexported/undocumented. Compat is `julia = "1.10"`, so the
+`public` keyword (1.11+) is unavailable. Plan calls for the inline path: replace
+the `VecLike` annotation in `qd_rigid`'s signature with the expanded inline union
+`Union{AbstractVector{<:Number}, Tuple{Number, Vararg{Number}}}`, keeping the
+`const VecLike` alias as an unexported internal convenience.
 
 ## Watch out for
-- **CHUNK-007 is the tricky one.** `minwidth_rot` is an *exported* keyword of
-  `qd_rigid` (it appears in the public signature `qd_rigid(...; minwidth_rot=...)`,
-  rigid.jl:181, and is documented in the docstring). Renaming it to `minwidth`
-  would be **breaking** for callers who pass it explicitly. `minwidth_mat` is
-  only a keyword of the semi-public `qd_affine_fine` (affine.jl:121), not of the
-  exported `qd_affine`. The plan's CHUNK-007 Notes flag this: the implementer
-  must decide whether to (a) rename only the internal `minwidth_mat`, keeping
-  `minwidth_rot` for back-compat, or (b) rename both and accept a breaking
-  change (acceptable per Stated values, since this is a v1.0.0 with breaking
-  changes already landing). This likely warrants a `decide` conversation with
-  the user before implementing.
-- CHUNK-008 (VecLike): `public` keyword unavailable (compat = 1.10); inline the
-  union type in the `qd_rigid` signature. `VecLike` is now referenced only in
-  the `qd_rigid` signature.
+- CHUNK-008's stated verification (`public VecLike` appears in
+  `names(RegisterQD, all=false, public=true)`) is **infeasible on 1.10** — the
+  `public` keyword doesn't exist there. The chunk Description already chose the
+  inline-union path instead, so adjust the verification accordingly: confirm the
+  inline union is in the `qd_rigid` signature, that `qd_rigid` still dispatches
+  correctly (vector and tuple `mxshift`), and that tests pass. Don't try to use
+  the `public` keyword.
+- `qd_rigid`'s signature uses `VecLike` for both `mxshift::VecLike` and
+  `mxrot::Union{Number,VecLike}` (rigid.jl:178). Decide whether to inline both or
+  keep the `const VecLike` alias and only drop the *export/doc* concern. The
+  simplest non-breaking move may be to keep `const VecLike` as-is (it's already
+  unexported) and just ensure it's referenced consistently — re-read the finding
+  before assuming a rewrite is needed.
+- After CHUNK-008, only CHUNK-009 (version-bump) remains. It's mostly a
+  confirmation step since `Project.toml` is already at 1.0.0; it asks for a
+  CHANGELOG entry noting CHUNK-002 (the one breaking change: `rotation_gridsearch`
+  `SD` is now a keyword).
