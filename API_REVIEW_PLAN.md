@@ -73,8 +73,8 @@ The goal is a coherent public surface that feels natural to a user who learned J
 - **Description**: Delete the two deprecated stub methods in `src/RegisterQD.jl`: the `qd_rigid(fixed, moving, mxshift::VecLike, mxrot, minwidth_rot::VecLike, SD::AbstractMatrix; kwargs...)` stub and the `qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD; kwargs...)` stub. Callers with the old signature already get an error; after removal they get a `MethodError` which is more informative.
 - **Depends on**: CHUNK-001
 - **Verification**: confirm removed methods produce `MethodError` with a clear message; existing tests pass
-- **Status**: `not-started`
-- **Notes**:
+- **Status**: `complete`
+- **Notes**: Deleted the `# Deprecations` block (both stubs) from `src/RegisterQD.jl`; module body now ends right after the `export` list. Confirmed via MCP that the old positional signatures `qd_rigid(fixed, moving, mxshift, mxrot, minwidth_rot, SD)` and `qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD)` now raise `MethodError` (previously hand-written `ErrorException`). No test exercised the stubs — all test call sites already use the new keyword signatures. Ambiguity count remains 0. Verified: util.jl (15/15) and qd_standard.jl (23/23) pass.
 
 ---
 
@@ -154,5 +154,7 @@ The goal is a coherent public surface that feels natural to a user who learned J
 **Session 2026-05-26**: Completed CHUNK-001 (preflight) and CHUNK-002 (rotation-gridsearch-SD-to-keyword). Preflight fixed two pre-existing RegisterCore/RegisterMismatch v1 compat breaks. CHUNK-002 moved `SD` from positional to keyword in `rotation_gridsearch`; docstring and test updated. Ambiguity count: 0. Next up: CHUNK-003 (qsmooth-default-eltype).
 
 **Session 2026-05-26 (b)**: Implemented CHUNK-003 (qsmooth-default-eltype). Changed the `qsmooth(img)` convenience overload to default to `float(eltype(img))` instead of hardcoded `Float32`, updated the docstring, and added a "qsmooth eltype" testset. Noted that `T` controls the kernel/compute eltype (output promotes against the image), so the original "always Float32" behavior only applied to sub-Float32 inputs. Ambiguity count: 0. Next up: CHUNK-004 (remove-deprecated-stubs).
+
+**Session 2026-05-26 (c)**: Implemented CHUNK-004 (remove-deprecated-stubs). Deleted the `# Deprecations` block (both always-`error()` stubs) from `src/RegisterQD.jl`. Verified the old positional signatures now raise `MethodError` instead of the hand-written `ErrorException`, no test exercised the stubs, ambiguities remain 0, and util.jl + qd_standard.jl pass. This completes the `deprecated-cleanup` cluster (1 of 1). Next up: CHUNK-005 (thresh-default-documentation).
 
 ## Open Questions

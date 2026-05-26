@@ -29,21 +29,4 @@ export qd_translate,
         getSD,
         qsmooth
 
-# Deprecations
-function qd_rigid(fixed, moving, mxshift::VecLike, mxrot::Union{Number,VecLike}, minwidth_rot::VecLike, SD::AbstractMatrix=I; kwargs...)
-    error("""
-    `qd_rigid` has a new syntax, see the help (`?qd_rigid`) and `NEWS.md`.
-    """)
-end
-
-function qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD;
-                   thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
-                   initial_tfm=IdentityTransformation(),
-                   print_interval=100,
-                   kwargs...)
-    error("""
-    `qd_affine` has a new syntax, see the help (`?qd_affine`) and `NEWS.md`.
-    """)
-end
-
 end # module
