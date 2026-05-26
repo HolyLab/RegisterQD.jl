@@ -69,8 +69,8 @@ end
 function affine_mm_slow(params, fixed, moving, thresh, SD; initial_tfm=IdentityTransformation())
     tfm = arrayscale(aff(params, moving, initial_tfm), SD)
     moving, fixed = warp_and_intersect(moving, fixed, tfm)
-    mm = mismatch0(fixed, moving; normalization=:intensity)
-    return ratio(mm, thresh, Inf)
+    mm = mismatch_zeroshift(fixed, moving; normalization=:intensity)
+    return ratio(mm, thresh; fillval=Inf)
 end
 
 """

@@ -27,9 +27,9 @@ One can compute an overall transformation by composing `initial_tfm` with the re
 function best_shift(fixed, moving, mxshift, thresh; normalization=:intensity, initial_tfm=IdentityTransformation())
     moving, fixed = warp_and_intersect(moving, fixed, initial_tfm)
     mms = mismatch(fixed, moving, mxshift; normalization=normalization)
-    best_i = indmin_mismatch(mms, thresh)
+    best_i = argmin_mismatch(mms, thresh)
     mm = mms[best_i]
-    return best_i.I, ratio(mm, thresh, typemax(eltype(mm)))
+    return best_i.I, ratio(mm, thresh; fillval=typemax(eltype(mm)))
 end
 
 """

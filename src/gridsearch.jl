@@ -75,7 +75,7 @@ function rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz, SD = 
         #mm = mismatch(fixed, new_moving, maxshift; normalization=:pixels)
         mm = mismatch(fixed, new_moving, maxshift)
         thresh = 0.1*maximum(x->x.denom, mm)
-        best_i = indmin_mismatch(mm, thresh)
+        best_i = argmin_mismatch(mm, thresh)
         cur_best =ratio(mm[best_i], 0.0)
         if cur_best < best_mm
             best_mm = cur_best
