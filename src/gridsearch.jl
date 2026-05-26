@@ -53,7 +53,7 @@ function grid_rotations(maxradians, rgridsz, SD)
 end
 
 """
-`best_tform, best_mm = rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz, SD =Matrix{Float64}(I,ndims(fixed),ndims(fixed))))`
+`best_tform, best_mm = rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz; SD=Matrix{Float64}(I,ndims(fixed),ndims(fixed)))`
 Tries a grid of rotations to align `moving` to `fixed`.  Also calculates the best translation (`maxshift` pixels
 or less) to align the images after performing the rotation. Returns an AffineMap that captures both the
 best rotation and shift out of the values searched, along with the mismatch value after applying that transform (`best_mm`).
@@ -61,7 +61,7 @@ best rotation and shift out of the values searched, along with the mismatch valu
 For more on how the arguments `maxradians`, `rgridsz`, and `SD` influence the search, see the documentation for
 `grid_rotations`.
 """
-function rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz, SD = Matrix{Float64}(I,ndims(fixed),ndims(fixed)))
+function rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz; SD = Matrix{Float64}(I,ndims(fixed),ndims(fixed)))
     rgridsz = [rgridsz...]
     nd = ndims(moving)
     @assert nd == ndims(fixed)
