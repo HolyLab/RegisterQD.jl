@@ -49,6 +49,7 @@ Do not smooth `moving`.
 If you have a good initial guess at the solution, pass it with the `initial_tfm` kwarg to jump-start the search.
 `thresh` enforces a certain amount of sum-of-squared-intensity overlap between the two images;
 with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
+The default value for `thresh` is 10% of the sum-of-squared-intensity of `fixed`.
 
 If the `crop` keyword arg is `true` then `fixed` is cropped by `mxshift` (after the optional `initial_tfm`) on all sides
 so that there will be complete overlap between `fixed` and `moving` for any evaluated shift. This avoids edge effects

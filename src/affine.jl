@@ -180,10 +180,16 @@ If you have a good initial guess at the solution, pass it with the `initial_tfm`
 Use `SD` if your axes are not uniformly sampled, for example `SD = diagm(voxelspacing)` where `voxelspacing`
 is a vector encoding the spacing along all axes of the image. `thresh` enforces a certain amount of sum-of-squared-intensity
 overlap between the two images; with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
+The default value for `thresh` is 50% of the sum-of-squared-intensity of `fixed`. This is higher than the 10% default
+used by `qd_translate` and `qd_rigid` because affine transformations have additional degrees of freedom (scaling and shear)
+that make degenerate low-overlap solutions more likely.
 """
 function qd_affine(fixed, moving, mxshift, linmins, linmaxs;
                    presmoothed=false,
                    SD=I,
+                   # Affine's extra degrees of freedom (scaling/shear) make degenerate
+                   # low-overlap solutions more likely, so the default requires more overlap
+                   # (50%) than the 10% used by qd_translate/qd_rigid.
                    thresh=0.5*sum(abs2.(fixed[.!(isnan.(fixed))])),
                    initial_tfm=IdentityTransformation(),
                    print_interval=100,

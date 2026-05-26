@@ -4,44 +4,53 @@
 API_REVIEW_PLAN.md — RegisterQD v1.0.0
 
 ## What was just completed
-CHUNK-004: remove-deprecated-stubs
+CHUNK-005: thresh-default-documentation
 
-Deleted the `# Deprecations` block in `src/RegisterQD.jl` — the two stub methods
-for the old positional signatures of `qd_rigid` and `qd_affine` that
-unconditionally called `error(...)`. The module body now ends immediately after
-the `export` list. Old-signature callers get a `MethodError` (which points at
-the real signatures) instead of a hand-written `ErrorException`.
+Determined that `qd_affine`'s `0.5×` thresh default is **intentional** (not a
+typo): git history shows it coexisted deliberately with the `0.1×` internal
+helper defaults since the first commit, and affine's extra degrees of freedom
+(scale/shear) justify requiring more image overlap. Kept the value, added an
+explanatory comment at `src/affine.jl:187`, and documented the `thresh` default
+in the `qd_affine` (50% + rationale) and `qd_translate` (10%) docstrings.
+`qd_rigid` already documented its 10% default.
 
 ## Key decisions / shim choices
-- Non-breaking; no shim. The stubs always errored, so removal only changes the
-  *kind* of error, not behavior.
-- Confirmed no test or internal caller used the deprecated positional forms —
-  every call site already uses the new keyword signatures.
+- No value change — purely a comment + docstring clarification. No new test
+  (per the chunk's verification clause: "no test needed unless the value
+  changes").
+- The plan's CHUNK-005 text said affine uses a "looser" threshold; that wording
+  is backwards — `0.5` is *stricter* (requires more overlap). The comment and
+  docs use the correct framing.
 
 ## State of the codebase
-- Files modified: `src/RegisterQD.jl`, `API_REVIEW_PLAN.md`, `API_REVIEW_SESSION.md`
-- Test suite: util.jl (15/15) and qd_standard.jl (23/23) pass via MCP; old
-  positional sigs verified to raise `MethodError`. gridsearch.jl not run (slow;
-  unaffected by this change, per baseline note).
+- Files modified: `src/affine.jl`, `src/translations.jl`, `API_REVIEW_PLAN.md`,
+  `API_REVIEW_SESSION.md`
+- Test suite: n/a (no behavioral change); package reloads cleanly via Revise,
+  both docstrings render the new default text
 - Ambiguity count: 0 (delta from baseline: 0)
 - Staged but uncommitted: no (changes in working tree, not staged)
 
 ## Cluster status
 - SD-consistency: 1 of 1 complete
-- deprecated-cleanup: 1 of 1 complete (CHUNK-004 done — cluster closed)
+- deprecated-cleanup: 1 of 1 complete
 - semi-public-polish: 0 of 2 complete (CHUNK-007, CHUNK-008 ready)
+- (CHUNK-005 and CHUNK-006 are cluster `none`)
 
 ## Next chunk
-CHUNK-005: thresh-default-documentation — investigate why `qd_affine` uses
-`thresh = 0.5 × …` while `qd_translate`/`qd_rigid` use `0.1 ×`. If intentional,
-add a one-line comment in `affine.jl`; if accidental, unify to `0.1 ×`. Either
-way, document the `thresh` keyword in all three exported docstrings. Breaking: no.
+CHUNK-006: default-minrot-array-overload — add a convenience overload that
+accepts an `AbstractArray` directly instead of requiring
+`CartesianIndices(img)`. Breaking: no.
 
 ## Watch out for
-- CHUNK-005: decide intentional-vs-accidental before editing. The `0.5` default
-  also appears in `qd_affine_coarse`/internal helpers — check consistency there.
+- **Naming mismatch in CHUNK-006**: the plan/finding K1 names the function
+  `default_minrot`, but the actual function in the code is `default_minwidth_rot`
+  (`src/util.jl:140` for the `CartesianIndices{2}` method, `:142` for the
+  `{3}` method). There is no `default_minrot`. The next session should add the
+  array overload to `default_minwidth_rot` and reconcile the chunk's wording.
+  Note `default_minwidth_rot` is *not* exported (it's an internal/semi-public
+  helper), so the overload is a convenience for internal/advanced callers.
 - CHUNK-007 (minwidth naming): `minwidth_rot` is an exported keyword of
   `qd_rigid`; renaming it would be breaking. Decide carefully.
 - CHUNK-008 (VecLike): `public` keyword unavailable (compat = 1.10); inline the
-  union type in the `qd_rigid` signature. Note `VecLike` is now used only inside
-  the package (the deprecation stubs that referenced it are gone).
+  union type in the `qd_rigid` signature. `VecLike` is now referenced only in
+  the `qd_rigid` signature (the deprecation stubs that also used it are gone).
