@@ -1,4 +1,25 @@
-# version 3.0
+# version 1.0.0
+
+## Breaking changes
+
+- `rotation_gridsearch`: the `SD` argument is now a keyword argument. Calls that
+  passed `SD` positionally (`rotation_gridsearch(fixed, moving, maxshift, maxradians,
+  rgridsz, mySD)`) must be updated to keyword syntax
+  (`rotation_gridsearch(fixed, moving, maxshift, maxradians, rgridsz; SD=mySD)`).
+
+## Non-breaking changes
+
+- `qsmooth(img)` now infers the output element type from the input: `float(eltype(img))`
+  instead of always returning `Float32`. To keep `Float32` output, pass it explicitly:
+  `qsmooth(Float32, img)`.
+- `default_minrot` now accepts an `AbstractArray` directly in addition to
+  `CartesianIndices`.
+- The old `qd_rigid` and `qd_affine` deprecated stubs (which always threw an error)
+  have been removed; mismatched calls now produce a clearer `MethodError`.
+
+---
+
+# version 0.3
 
 ## Breaking changes
 
