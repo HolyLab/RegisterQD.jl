@@ -1,3 +1,6 @@
+_corners(ci::CartesianIndices) =
+    (CartesianIndex(c) for c in Iterators.product(((first(r), last(r)) for r in ci.indices)...))
+
 function warp_and_intersect(moving, fixed, tfm::IdentityTransformation)
     if axes(moving) == axes(fixed)
         return moving, fixed
@@ -124,7 +127,7 @@ its `CartesianIndices` are used.
 """
 function default_minrot(ci::CartesianIndices, SD = I; Δc = 0.1)
     L = -Inf
-    for x in CornerIterator(ci)
+    for x in _corners(ci)
         x′ = SD * SVector(Tuple(x))  # position of corner point in physical space
         L = max(L, norm(x′))
     end
