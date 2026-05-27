@@ -1,6 +1,8 @@
 using ImageMagick
 using RegisterQD, RegisterMismatch
-using Test
+using Aqua, Test
+
+Aqua.test_all(RegisterQD)
 
 include("util.jl")
 include("qd_random.jl")
