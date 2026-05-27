@@ -26,6 +26,7 @@ AxisArrays = "0.3, 0.4"
 CenterIndexedArrays = "1"
 CoordinateTransformations = "0.5, 0.6"
 Distributions = "0.20, 0.21, 0.22, 0.23, 0.24, 0.25"
+Documenter = "1"
 ExplicitImports = "1"
 ImageCore = "0.10"
 ImageFiltering = "0.7"
@@ -52,9 +53,10 @@ julia = "1.10"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
-ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 ImageMetadata = "bc367c6b-8a6b-528e-b4bd-a4b897500b49"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -65,4 +67,4 @@ TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [targets]
-test = ["Aqua", "ExplicitImports", "Test", "ImageMagick", "TestImages", "Random", "AxisArrays", "ImageMetadata", "Unitful", "Distributions", "LinearAlgebra", "RegisterMismatch"]
+test = ["Aqua", "Documenter", "ExplicitImports", "Test", "ImageMagick", "TestImages", "Random", "AxisArrays", "ImageMetadata", "Unitful", "Distributions", "LinearAlgebra", "RegisterMismatch"]

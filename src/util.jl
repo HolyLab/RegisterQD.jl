@@ -38,19 +38,38 @@ end
 """
     itfm = arrayscale(ptfm, SD)
 
-Convert the physical-space transformation `ptfm` into one, `itfm`, that operates on index-space
-for arrays.
-For example, suppose `ptfm` is a pure 3d rotation, but you want to apply it to an array
-in which the sampling along the three axes is (0.5mm, 0.5mm, 2mm). Then by setting
-`SD = Diagonal(SVector(1, 1, 4))` (the ratio of scales along each axis),
-one obtains an `itfm` suitable for warping the array.
+Convert the physical-space transformation `ptfm` into an equivalent transformation
+`itfm` that operates on array index-space. Returns an `AffineMap` suitable for
+warping the array (e.g. via `ImageTransformations.warp`).
 
-Any translational component of `ptfm` is interpreted in physical-space units, not index-units.
+For example, suppose `ptfm` is a pure 3D rotation, but you want to apply it to an array
+sampled at (0.5 mm, 0.5 mm, 2 mm) along the three axes. By setting
+`SD = Diagonal(SVector(1, 1, 4))` (the spacing ratios), you obtain an `itfm` that
+correctly accounts for the anisotropy when warping.
 
-`SD` does not even have to be diagonal, if the array sampling is skewed.
-The columns of `SD` should correspond to the physical-coordinate displacement
-achieved by shifting by one array element along each axis of the array.
-Specifically, `SD[:,j]` should be the physical displacement of one array voxel along dimension `j`.
+Any translational component of `ptfm` is interpreted in physical-space units, not
+index-units.
+
+`SD` does not need to be diagonal; the columns of `SD` encode the physical-coordinate
+displacement achieved by advancing one array element along each axis: `SD[:,j]` is
+the physical displacement per voxel along dimension `j`.
+
+# Examples
+
+```jldoctest
+julia> using CoordinateTransformations, LinearAlgebra
+
+julia> SD = [1.0 0.0; 0.0 2.0];   # dim 2 sampled 2× coarser than dim 1
+
+julia> ptfm = LinearMap([0.0 -1.0; 1.0 0.0]);  # 90° CCW rotation in physical space
+
+julia> itfm = arrayscale(ptfm, SD);
+
+julia> itfm.linear
+2×2 Matrix{Float64}:
+ 0.0  -2.0
+ 0.5   0.0
+```
 """
 arrayscale(ptfm::AbstractAffineMap, SD::AbstractMatrix) =
     arrayscale(ptfm, LinearMap(SD))
@@ -154,25 +173,32 @@ end
 """
     getSD(A::AbstractArray)
 
-If your image is not uniformily sampled, use this to get the `SD` matrix, which represents spacing along all axes of an image.
+Return the spatial-directions matrix `SD` for array `A`.
+
+`SD` is an `N×N` `SMatrix` (returned as `SMatrix{N,N,Float64}`) whose columns encode
+the physical-coordinate displacement corresponding to a one-element step along each
+array axis: `SD[:,j]` is the physical displacement per voxel along dimension `j`.
+This matrix is used by [`arrayscale`](@ref), [`qd_rigid`](@ref), and
+[`qd_affine`](@ref) when the image axes are not uniformly sampled.
+
+Attach physical-spacing metadata to your array via
+[ImageAxes.jl](https://github.com/JuliaImages/ImageAxes.jl) or a compatible package.
 
 # Examples
-```julia-repl
-julia> myimage
-Normed ImageMeta with:
-  data: 3-dimensional AxisArray{N2f14,3,...} with axes:
-    :x, 0.0 μm:0.71 μm:6.39 μm
-    :l, 0.0 μm:0.71 μm:6.39 μm
-    :z, 0.0 μm:6.2 μm:55.8 μm
-And data, a 10×10×10 Array{N2f14,3} with eltype Normed{UInt16,14}
-  properties:
-    imagineheader: <suppressed>
 
-julia> getSD(myimage)
-3×3 SArray{Tuple{3,3},Float64,2,9} with indices SOneTo(3)×SOneTo(3):
- 0.71  0.0   0.0
- 0.0   0.71  0.0
- 0.0   0.0   6.2
+```jldoctest
+julia> using AxisArrays
+
+julia> img = AxisArray(rand(4, 5, 6),
+           Axis{:x}(0.0:0.5:1.5),
+           Axis{:y}(0.0:0.5:2.0),
+           Axis{:z}(0.0:2.0:10.0));
+
+julia> getSD(img)
+3×3 StaticArraysCore.SMatrix{3, 3, Float64, 9} with indices SOneTo(3)×SOneTo(3):
+ 0.5  0.0  0.0
+ 0.0  0.5  0.0
+ 0.0  0.0  2.0
 ```
 """
 getSD(A::AbstractArray) = getSD(spacedirections(A)) #takes advantage of how spacedirections automatically strips out the time component
@@ -191,11 +217,26 @@ end
     imgq = qsmooth(img)
     imgq = qsmooth(T, img)
 
-Create a smoothed version of `img`, smoothing with the kernel of a quadratic B-spline.
-Use this on your `fixed` image in preparation for registration, and pass `presmoothed`
-as an option. (Do not smooth `moving`.)
+Return a smoothed copy of `img` with element type `T` (default: `float(eltype(img))`),
+smoothed with the kernel of a quadratic B-spline.
 
-`T` allows you to specify the output eltype (default `float(eltype(img))`).
+Apply to `fixed` before registration and pass `presmoothed=true` to the registration
+function. Do not smooth `moving`.
+
+# Examples
+
+```jldoctest
+julia> img = [1.0 2.0 3.0; 4.0 5.0 6.0; 7.0 8.0 9.0];
+
+julia> qsmooth(img)
+3×3 Matrix{Float64}:
+ 1.5    2.375  3.25
+ 4.125  5.0    5.875
+ 6.75   7.625  8.5
+
+julia> eltype(qsmooth(Float32, Float32.(img)))
+Float32
+```
 """
 function qsmooth(::Type{T}, img::AbstractArray{T2, N}) where {T, N, T2}
     kern1 = centered(T[1 / 8, 3 / 4, 1 / 8])   # quadratic B-spline kernel

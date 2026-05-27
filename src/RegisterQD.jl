@@ -1,3 +1,29 @@
+"""
+    RegisterQD
+
+Image registration using the [QuadDIRECT](https://github.com/timholy/QuadDIRECT.jl)
+global optimization algorithm.
+
+The three main entry points are:
+- [`qd_translate`](@ref): optimize a pure translation
+- [`qd_rigid`](@ref): optimize a rigid transformation (rotation + translation)
+- [`qd_affine`](@ref): optimize a full affine transformation
+
+All three return `(tform, mm)` where `tform` is a
+[CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl)
+transform object and `mm` is the residual mismatch value (lower is better).
+
+!!! note
+    A mismatch backend such as
+    [RegisterMismatch.jl](https://github.com/HolyLab/RegisterMismatch.jl) must be
+    loaded (`using RegisterMismatch`) before calling any registration function.
+
+# Utilities
+- [`arrayscale`](@ref): convert a physical-space transform to array-index space
+- [`getSD`](@ref): extract the spatial-directions matrix from an annotated image
+- [`qsmooth`](@ref): pre-smooth an image for registration
+- [`grid_rotations`](@ref) / [`rotation_gridsearch`](@ref): coarse rotation grid search
+"""
 module RegisterQD
 
 using CenterIndexedArrays: CenterIndexedArrays

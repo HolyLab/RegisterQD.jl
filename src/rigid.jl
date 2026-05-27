@@ -133,7 +133,8 @@ end
     tform, mm = qd_rigid(fixed, moving, mxshift, mxrot;
                          presmoothed=false,
                          SD=I, minwidth_rot=default_minwidth_rot(fixed, SD),
-                         thresh=thresh, initial_tfm=IdentityTransformation(), kwargs...)
+                         thresh=0.1*sum(abs2,fixed), initial_tfm=IdentityTransformation(),
+                         kwargs...)
 
 Optimize a rigid transformation (rotation + shift) to minimize the mismatch between `fixed` and
 `moving` using the QuadDIRECT algorithm.  The algorithm is run twice: the first step finds the optimal rotation,
@@ -188,6 +189,27 @@ Do not smooth `moving`.
 Both the output `tfm` and any `initial_tfm` are represented in *physical* coordinates;
 as long as `initial_tfm` is a rigid transformation, `tfm` will be a pure rotation+translation.
 If `SD` is not the identity, use `arrayscale` before applying the result to `moving`.
+
+!!! note
+    A mismatch backend such as
+    [RegisterMismatch.jl](https://github.com/HolyLab/RegisterMismatch.jl) must be
+    loaded before calling this function.
+
+# Examples
+
+```julia-repl
+julia> using RegisterMismatch, CoordinateTransformations, Rotations, ImageFiltering, ImageTransformations
+
+julia> fixed = Float64.(reshape(1:100, 10, 10));
+
+julia> moving = warp(centered(fixed), LinearMap(RotMatrix(0.1)));
+
+julia> tform, mm = qd_rigid(collect(centered(fixed)), collect(float(moving)), (2,2), (0.3,);
+                            print_interval=typemax(Int));
+
+julia> mm < 1e-4
+true
+```
 """
 function qd_rigid(
         fixed, moving, mxshift::VecLike, mxrot::Union{Number, VecLike};
