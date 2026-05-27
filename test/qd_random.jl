@@ -154,6 +154,12 @@ using Test, TestImages
     #TODO this test passes if run individually, but breaks when included in the testset.
 end #tests with random images
 
+@testset "qd_translate crop error for undersized moving image" begin
+    fixed = rand(20, 20)
+    moving = rand(5, 5)  # too small for mxshift = (5, 5): needs size ≥ 2*(5+1) = 12
+    @test_throws ErrorException RegisterQD.qd_translate(fixed, moving, (5, 5); crop = true)
+end
+
 @testset "Suppression of printing" begin
     a, b = rand(5, 5), rand(5, 5)
     ca, cb = centered(a), centered(b)
