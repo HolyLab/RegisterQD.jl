@@ -2,9 +2,9 @@ DONE: design review
 DONE: API review
 DONE: update .gitignore
 DONE: format with runic
-TODO: add Aqua.jl
-TODO: remove deprecations
-TODO: add ExplicitImports.jl
+DONE: add Aqua.jl
+DONE: remove deprecations
+DONE: add ExplicitImports.jl
 TODO: limit struct mutability
 TODO: improve test coverage
 TODO: add and improve docstrings

@@ -1,16 +1,22 @@
 module RegisterQD
 
-using ImageCore, ImageTransformations, ImageFiltering
-using CoordinateTransformations
-using QuadDIRECT
-using RegisterMismatchCommon
-using RegisterCore
-using RegisterDeformation, PaddedViews, MappedArrays
-using Rotations
-using Interpolations, CenterIndexedArrays, StaticArrays, OffsetArrays
-using LinearAlgebra
-
-using ImageTransformations: CornerIterator
+using CenterIndexedArrays: CenterIndexedArrays
+using CoordinateTransformations: CoordinateTransformations, AbstractAffineMap, AffineMap,
+    IdentityTransformation, LinearMap, Translation
+using ImageCore: ImageCore, spacedirections
+using ImageFiltering: ImageFiltering, centered, imfilter, kernelfactors
+using ImageTransformations: ImageTransformations, warp
+using Interpolations: Interpolations, BSpline, Free, OnCell, Quadratic, extrapolate
+using LinearAlgebra: LinearAlgebra, I, UniformScaling, eigen, norm
+using MappedArrays: MappedArrays, of_eltype
+using OffsetArrays: OffsetArrays, OffsetArray
+using PaddedViews: PaddedViews, PaddedView
+using QuadDIRECT: QuadDIRECT, value
+using RegisterCore: RegisterCore, argmin_mismatch, ratio
+using RegisterDeformation: RegisterDeformation, tformeye, tformrotate, tformtranslate, transform
+using RegisterMismatchCommon: RegisterMismatchCommon, mismatch, mismatch_zeroshift
+using Rotations: Rotations, RotMatrix, isrotation
+using StaticArrays: StaticArrays, @SMatrix, SMatrix, SVector
 
 const VecLike = Union{AbstractVector{<:Number}, Tuple{Number, Vararg{Number}}}
 
