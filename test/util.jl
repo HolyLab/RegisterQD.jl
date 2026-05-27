@@ -1,11 +1,13 @@
 using ImageMagick
 using TestImages
 using RegisterQD
+using RegisterQD.CoordinateTransformations: IdentityTransformation
 using LinearAlgebra
 using ImageMetadata
 import AxisArrays
 using AxisArrays: AxisArray, Axis
 using Unitful: μm, mm, cm, km, s
+using OffsetArrays
 
 @testset "default_minwidth_rot" begin
     img = rand(3, 10)
@@ -72,8 +74,10 @@ end
     @test eltype(qsmooth(Float64, img32)) === Float64
 end
 
-#TODO add a testset for other support functions
-#rotations
-#arrayscale
-#pscale
-#restrict
+@testset "warp_and_intersect IdentityTransformation with mismatched axes" begin
+    moving = OffsetArray(rand(5, 5), 1:5, 1:5)
+    fixed  = OffsetArray(rand(5, 5), 3:7, 3:7)
+    vm, vf = RegisterQD.warp_and_intersect(moving, fixed, IdentityTransformation())
+    @test axes(vm) == axes(vf)
+    @test length.(axes(vm)) == (3, 3)  # intersection of 1:5 and 3:7 has 3 elements per dim
+end

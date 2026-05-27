@@ -3,6 +3,7 @@ using RegisterQD.CoordinateTransformations
 using RegisterQD.RegisterDeformation
 using LinearAlgebra: I
 using Test
+using OffsetArrays
 
 @testset "Grid search rigid registration" begin
     ## 2D
@@ -26,4 +27,15 @@ using Test
     tfm, mm = RegisterQD.rotation_gridsearch(a, b, (3, 3, 3), [pi / 4, pi / 4, pi / 4], [5;5;5])
     @test tfm.translation == tfm0.translation
     @test tfm.linear == tfm0.linear
+end
+
+@testset "grid_rotations rounds even rgridsz to odd" begin
+    SD = Matrix{Float64}(I, 2, 2)
+    rots = @test_logs (:warn, r"rgridsz should be odd") RegisterQD.grid_rotations([pi / 6], [4], SD)
+    @test length(rots) == 5  # 4 rounded up to 5
+end
+
+@testset "grid_rotations unsupported dimensionality" begin
+    SD = Matrix{Float64}(I, 1, 1)
+    @test_throws ErrorException RegisterQD.grid_rotations([0.1], [3], SD)
 end
