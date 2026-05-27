@@ -27,7 +27,7 @@ EYE = Matrix(1.0 * I, 3, 3)
 
     tform = RotXYZ(0.1, 0.1, 0.1)
     mytform = AffineMap(tform, [0, 0, 0])
-    testimage2 = warp(testimage1, mytform, axes(testimage1))
+    testimage2 = warp(testimage1, mytform, Base.axes(testimage1))
 
     # insufficient parameters + no initiat_tfm causes large misalignment
 
@@ -85,7 +85,7 @@ end
 
     tform = RotXYZ(0.1, 0.1, 0.1)
     mytform = AffineMap(tform, [0, 0, 0])
-    testimage2 = warp(testimage1, mytform, axes(testimage1))
+    testimage2 = warp(testimage1, mytform, Base.axes(testimage1))
 
     mxrot2 = (0.2, 0.2, 0.2)
     minwidth_rot = RegisterQD.default_minwidth_rot(CartesianIndices(testimage2), EYE)
@@ -193,7 +193,7 @@ end
 
     tform = RotXYZ(0.1, 0.1, 0.1)
     mytform = AffineMap(tform, [0.0, 0.0, 0.0])
-    testimage2 = warp(testimage1, mytform, axes(testimage1))
+    testimage2 = warp(testimage1, mytform, Base.axes(testimage1))
 
 
     tformtest1, mm1 = qd_affine(testimage2, testimage1, mxshift; print_interval = typemax(Int)) #
