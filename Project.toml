@@ -21,7 +21,9 @@ Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+Aqua = "0.8"
 AxisArrays = "0.3, 0.4"
+LinearAlgebra = "1"
 CenterIndexedArrays = "1"
 CoordinateTransformations = "0.5, 0.6"
 Distributions = "0.20, 0.21, 0.22, 0.23, 0.24, 0.25"
@@ -35,16 +37,20 @@ MappedArrays = "0.2, 0.3, 0.4"
 OffsetArrays = "0.11, 1"
 PaddedViews = "0.4, 0.5"
 QuadDIRECT = "0.1"
+Random = "1"
 RegisterCore = "1"
 RegisterDeformation = "1"
 RegisterMismatch = "1"
+RegisterMismatchCommon = "1"
 Rotations = "0.12, 0.13, 1"
 StaticArrays = "0.11, 0.12, 1"
+Test = "1"
 TestImages = "0.5, 0.6, 1"
 Unitful = "0.17, 0.18, 1"
 julia = "1.10"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
@@ -57,4 +63,4 @@ TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [targets]
-test = ["Test", "ImageMagick", "TestImages", "Random", "AxisArrays", "ImageMetadata", "Unitful", "Distributions", "LinearAlgebra", "RegisterMismatch"]
+test = ["Aqua", "Test", "ImageMagick", "TestImages", "Random", "AxisArrays", "ImageMetadata", "Unitful", "Distributions", "LinearAlgebra", "RegisterMismatch"]
