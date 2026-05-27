@@ -30,32 +30,61 @@ function qd_translate_fine(
 end
 
 """
-`tform, mm = qd_translate(fixed, moving, mxshift; presmoothed=false, thresh=thresh, kwargs...)`
-optimizes a simple shift (translation) to minimize the mismatch between `fixed` and
-`moving` using the QuadDIRECT algorithm with the constraint that no shifts larger than
-``mxshift` (after an optional `initial_tfm`) will be considered.
+    tform, mm = qd_translate(fixed, moving, mxshift;
+                             presmoothed=false, thresh=0.1*sum(abs2,fixed), kwargs...)
 
-Both `mxshift` and the returned translation are specified in terms of pixel units, so the
-algorithm need not be aware of anisotropic sampling.
+Optimize a translation to minimize the mismatch between `fixed` and `moving` using the
+QuadDIRECT algorithm. No shift larger than `mxshift` (after an optional `initial_tfm`)
+will be considered.
 
-The algorithm involves two steps: the first step uses a fourier method to speed up
-the search for the best whole-pixel shift.  The second step refines the search for sub-pixel accuracy.
-The default precision of this step is 1% of one pixel (0.01) for each dimension of the image.
-You can override the default with the `minwidth` argument.  `kwargs...` can also include
-any other keyword argument that can be passed to `QuadDIRECT.analyze`.
-It's recommended that you pass your own stopping criteria when possible (i.e. `rtol`, `atol`, and/or `fvalue`).
+Returns `(tform, mm)` where `tform` is a `Translation` and `mm` is the residual
+mismatch value (lower is better).
 
-Use `presmoothed=true` if you have called [`qsmooth`](@ref) on `fixed` before calling `qd_affine`.
-Do not smooth `moving`.
+Both `mxshift` and the returned translation are in pixel units, so the algorithm does
+not need to know the physical sampling.
 
-If you have a good initial guess at the solution, pass it with the `initial_tfm` kwarg to jump-start the search.
-`thresh` enforces a certain amount of sum-of-squared-intensity overlap between the two images;
-with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
-The default value for `thresh` is 10% of the sum-of-squared-intensity of `fixed`.
+The algorithm runs in two steps: the first uses a Fourier method to find the best
+whole-pixel shift; the second refines for sub-pixel accuracy with default precision of
+1% of one pixel (`minwidth=fill(0.01, ndims(fixed))`). Override with the `minwidth`
+keyword argument. `kwargs...` can include any keyword argument accepted by
+`QuadDIRECT.analyze`. Supplying your own stopping criteria (`rtol`, `atol`, and/or
+`fvalue`) is recommended.
 
-If the `crop` keyword arg is `true` then `fixed` is cropped by `mxshift` (after the optional `initial_tfm`) on all sides
-so that there will be complete overlap between `fixed` and `moving` for any evaluated shift. This avoids edge effects
-that can occur due to normalization when the transformed `moving` doesn't fully overlap with `fixed`.
+Use `presmoothed=true` if you have called [`qsmooth`](@ref) on `fixed` before calling
+`qd_translate`. Do not smooth `moving`.
+
+If you have a good initial guess, pass it with `initial_tfm` to jump-start the search.
+
+`thresh` enforces a minimum sum-of-squared-intensity overlap between the two images;
+with non-zero `thresh`, shifting one image entirely out of view is not a valid solution.
+The default is 10% of the sum-of-squared-intensity of `fixed`.
+
+If `crop=true`, `fixed` is cropped by `mxshift` on all sides so that there is complete
+overlap between `fixed` and `moving` for every evaluated shift. This avoids edge-effect
+normalization artifacts when the transformed `moving` does not fully overlap `fixed`.
+
+!!! note
+    A mismatch backend such as
+    [RegisterMismatch.jl](https://github.com/HolyLab/RegisterMismatch.jl) must be
+    loaded before calling this function.
+
+# Examples
+
+```jldoctest
+julia> using RegisterMismatch
+
+julia> fixed = Float64.(reshape(1:25, 5, 5));
+
+julia> moving = circshift(fixed, (2, 1));  # known shift: 2 rows, 1 column
+
+julia> tform, mm = qd_translate(fixed, moving, (3, 3); print_interval=typemax(Int));
+
+julia> println(tform.translation)
+[2.0, 1.0]
+
+julia> mm
+0.0
+```
 """
 function qd_translate(
         fixed, moving, mxshift;

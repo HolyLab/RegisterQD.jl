@@ -160,43 +160,76 @@ end
 # You supply one or the other, so I don't see a problem.
 #TODO I think that this is a tad loquatious, and not enough examples. Permission to rework it?
 """
-`tform, mm = qd_affine(fixed, moving, mxshift, linmins, linmaxs, SD=I; presmoothed=false, thresh, initial_tfm, kwargs...)`
-`tform, mm = qd_affine(fixed, moving, mxshift, SD=I; presmoothed=false, thresh, initial_tfm, kwargs...)`
-optimizes an affine transformation (linear map + translation) to minimize the mismatch between `fixed` and
-`moving` using the QuadDIRECT algorithm.  The algorithm is run twice: the first step samples the search space
-at a coarser resolution than the second.  `kwargs...` may contain any keyword argument that can be passed to
-`QuadDIRECT.analyze`. It's recommended that you pass your own stopping criteria when possible
-(i.e. `rtol`, `atol`, and/or `fvalue`).  If you provide `rtol` and/or `atol` they will apply only to the
-second (fine) step of the registration; the user may not adjust these criteria for the coarse step.
+    tform, mm = qd_affine(fixed, moving, mxshift, linmins, linmaxs;
+                          presmoothed=false, SD=I,
+                          thresh=0.5*sum(abs2,fixed), initial_tfm=IdentityTransformation(),
+                          kwargs...)
+    tform, mm = qd_affine(fixed, moving, mxshift;
+                          dmax=0.05, ndmax=0.05,
+                          presmoothed=false, SD=I,
+                          thresh=0.5*sum(abs2,fixed), initial_tfm=IdentityTransformation(),
+                          kwargs...)
 
-`tform` will be centered on the origin-of-coordinates, i.e. (0,0) for a 2D image.  Usually it is more natural to consider rotations
-around the center of the image.  If you would like `mxrot` and the returned rotation to act relative to the center of the image, then you must
-move the origin to the center of the image by calling `centered(img)` from the `ImageTransformations` package.  Call `centered` on both the
-fixed and moving image to generate the `fixed` and `moving` that you provide as arguments.  If you later want to apply the returned transform
-to an image you must remember to call `centered` on that image as well.  Alternatively you can re-encode the transformation in terms of a
-different origin by calling `recenter(tform, newctr)` where `newctr` is the displacement of the new center from the old center.
+Optimize an affine transformation (linear map + translation) to minimize the mismatch
+between `fixed` and `moving` using the QuadDIRECT algorithm.
 
-The `linmins` and `linmaxs` arguments set the minimum and maximum allowable values in the linear map matrix.
-They can be supplied as NxN matrices or flattened vectors.  If omitted then a modest default search space is chosen.
-`mxshift` sets the magnitude of the largest allowable translation in each dimension (It's a vector of length N).
-This default search-space allows for very little rotation.
-Alternatively, you can submit `dmax` or `ndmax` values as keyword functions, which will use diagonal or non-diagonal variation from the identity matrix
-to generate less modest `linmins` and `linmaxs` arguments for you.
+Returns `(tform, mm)` where `tform` is an `AffineMap` and `mm` is the residual mismatch
+value (lower is better).
 
-Use `presmoothed=true` if you have called [`qsmooth`](@ref) on `fixed` before calling `qd_affine`.
-Do not smooth `moving`.
+The algorithm runs in two steps: the first step samples the search space at a coarser
+resolution than the second. `kwargs...` may contain any keyword argument accepted by
+`QuadDIRECT.analyze`. Supplying your own stopping criteria (`rtol`, `atol`, and/or
+`fvalue`) is recommended. Any `rtol`/`atol` you supply will apply only to the second
+(fine) step; the coarse step uses fixed internal criteria.
 
-`kwargs...` can also include any other keyword argument that can be passed to `QuadDIRECT.analyze`.
-It's recommended that you pass your own stopping criteria when possible (i.e. `rtol`, `atol`, and/or `fvalue`).
+`tform` is centered on the origin of coordinates, i.e. `(0, 0)` for 2D images. To
+rotate around the image center instead, call `centered(img)` (from `ImageFiltering` or
+`ImageTransformations`) on both `fixed` and `moving` before calling `qd_affine`.
+To re-encode the result relative to a different center, use
+`recenter(tform, newctr)`.
 
-If you have a good initial guess at the solution, pass it with the `initial_tfm` kwarg to jump-start the search.
+`linmins` and `linmaxs` bound the allowable values of the linear-map matrix entries.
+They can be `N×N` matrices or flattened vectors. If omitted, a modest default search
+space is used, controllable via the `dmax` (diagonal) and `ndmax` (off-diagonal) keyword
+arguments; e.g. `dmax=0.05` permits diagonal entries in `[0.95, 1.05]`.
 
-Use `SD` if your axes are not uniformly sampled, for example `SD = diagm(voxelspacing)` where `voxelspacing`
-is a vector encoding the spacing along all axes of the image. `thresh` enforces a certain amount of sum-of-squared-intensity
-overlap between the two images; with non-zero `thresh`, it is not permissible to "align" the images by shifting one entirely out of the way of the other.
-The default value for `thresh` is 50% of the sum-of-squared-intensity of `fixed`. This is higher than the 10% default
-used by `qd_translate` and `qd_rigid` because affine transformations have additional degrees of freedom (scaling and shear)
-that make degenerate low-overlap solutions more likely.
+`mxshift` sets the maximum allowable translation in each dimension.
+
+Use `presmoothed=true` if you have called [`qsmooth`](@ref) on `fixed` before calling
+`qd_affine`. Do not smooth `moving`.
+
+If you have a good initial guess, pass it with `initial_tfm` to jump-start the search.
+
+Use `SD` if your axes are not uniformly sampled, for example
+`SD = diagm(voxelspacing)` where `voxelspacing` encodes the physical spacing along each
+axis. See [`arrayscale`](@ref) for details.
+
+`thresh` enforces a minimum sum-of-squared-intensity overlap; with non-zero `thresh`,
+it is not permissible to "align" the images by shifting one entirely out of view.
+The default is 50% of the sum-of-squared-intensity of `fixed` — higher than the 10%
+used by [`qd_translate`](@ref) and [`qd_rigid`](@ref) because affine transformations
+have extra degrees of freedom (scaling, shear) that make degenerate low-overlap
+solutions more likely.
+
+!!! note
+    A mismatch backend such as
+    [RegisterMismatch.jl](https://github.com/HolyLab/RegisterMismatch.jl) must be
+    loaded before calling this function.
+
+# Examples
+
+```julia-repl
+julia> using RegisterMismatch
+
+julia> fixed = Float64.(reshape(1:25, 5, 5));
+
+julia> moving = circshift(fixed, (1, 0));
+
+julia> tform, mm = qd_affine(fixed, moving, (3, 3); print_interval=typemax(Int));
+
+julia> mm < 1e-6
+true
+```
 """
 function qd_affine(
         fixed, moving, mxshift, linmins, linmaxs;

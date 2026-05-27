@@ -1,6 +1,7 @@
 using ImageMagick
 using RegisterQD, RegisterMismatch
-using Aqua, ExplicitImports, Test
+using AxisArrays
+using Aqua, Documenter, ExplicitImports, Test
 
 Aqua.test_all(RegisterQD)
 
@@ -12,3 +13,12 @@ include("qd_random.jl")
 include("qd_standard.jl")
 include("gridsearch.jl")
 include("initial_tfm.jl")
+
+DocMeta.setdocmeta!(
+    RegisterQD, :DocTestSetup,
+    :(using RegisterQD, RegisterMismatch, AxisArrays, CoordinateTransformations, LinearAlgebra);
+    recursive = true,
+)
+@testset "Doctests" begin
+    doctest(RegisterQD; manual=false)
+end
