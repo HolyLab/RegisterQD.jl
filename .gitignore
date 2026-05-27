@@ -5,3 +5,5 @@ Manifest.toml
 Manifest-v*.toml
 test/Manifest.toml
 .vscode/
+docs/build/
+docs/Manifest.toml
