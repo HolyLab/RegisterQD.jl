@@ -218,7 +218,7 @@ solutions more likely.
 
 # Examples
 
-```julia-repl
+```jldoctest
 julia> using RegisterMismatch
 
 julia> fixed = Float64.(reshape(1:25, 5, 5));

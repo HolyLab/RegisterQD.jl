@@ -147,7 +147,7 @@ any regions of `fixed` that you don't want to align against.
 as a vector or tuple.
 `mxrot` is the maximum-allowed rotation, in radians for 2d or
 [quaternion-units](https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation) for 3d.
-See [`RegisterQD.rot`](@ref) for more information.
+See `RegisterQD.rot` for more information.
 `minwidth_rot` optionally specifies the lower limit of resolution for the *rotation*
 parameters only; the translation resolution is fixed internally and is not user-adjustable.
 The default is a rotation that moves corner elements by 0.1 pixel. The `_rot` suffix
@@ -197,7 +197,7 @@ If `SD` is not the identity, use `arrayscale` before applying the result to `mov
 
 # Examples
 
-```julia-repl
+```jldoctest
 julia> using RegisterMismatch, CoordinateTransformations, Rotations, ImageFiltering, ImageTransformations
 
 julia> fixed = Float64.(reshape(1:100, 10, 10));

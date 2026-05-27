@@ -1,23 +1,60 @@
 # RegisterQD
 
-[![CI](https://github.com/HolyLab/RegisterQD.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/HolyLab/RegisterQD.jl/actions/workflows/CI.yml)[![codecov](https://codecov.io/gh/HolyLab/RegisterQD.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/HolyLab/RegisterQD.jl)[![Aqua QA](https://juliatesting.github.io/Aqua.jl/dev/assets/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
+[![CI](https://github.com/HolyLab/RegisterQD.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/HolyLab/RegisterQD.jl/actions/workflows/CI.yml)
+[![codecov](https://codecov.io/gh/HolyLab/RegisterQD.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/HolyLab/RegisterQD.jl)
+[![Stable docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://HolyLab.github.io/RegisterQD.jl/stable/)
+[![Dev docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://HolyLab.github.io/RegisterQD.jl/dev/)
+[![Aqua QA](https://juliatesting.github.io/Aqua.jl/dev/assets/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 RegisterQD performs image registration using the global optimization routine [QuadDIRECT](https://github.com/timholy/QuadDIRECT.jl).
-Unlike many other registration packages, this is not "greedy" descent based on an initial guess---it attempts to find the globally-optimal alignment of your images.
+Unlike many other registration packages, this is not "greedy" descent based on an initial guess — it attempts to find the globally-optimal alignment of your images.
 
-To use this package, users must choose between using either the CPU or the GPU. For CPU processing, you must manually load the [RegisterMismatch package](https://github.com/HolyLab/RegisterMismatch.jl): `using RegisterMismatch, RegisterQD`. For GPU processing, you should instead load the [RegisterMismatchCuda package](https://github.com/HolyLab/RegisterMismatchCuda.jl): `using RegisterMismatchCuda, RegisterQD`. *Note that loading both mismatch packages in the same session will cause method conflicts.* Both mismatch packages are registered in the publicly-available [HolyLabRegistry](https://github.com/HolyLab/HolyLabRegistry), and users are advised to add that registry. 
-In the current absense of Github resources for GPU code, "gpu_test.jl" should be run on your personal machine as required. 
+## Installation
 
-This package exports the following registration functions:
+RegisterQD and its dependencies live in the [HolyLab registry](https://github.com/HolyLab/HolyLabRegistry).
+Add the registry once, then install:
+
+```julia
+using Pkg
+pkg"registry add https://github.com/HolyLab/HolyLabRegistry.git"
+Pkg.add("RegisterQD")
+```
+
+You also need a mismatch backend. For CPU processing, load [RegisterMismatch](https://github.com/HolyLab/RegisterMismatch.jl):
+
+```julia
+Pkg.add("RegisterMismatch")
+```
+
+For GPU processing, use [RegisterMismatchCuda](https://github.com/HolyLab/RegisterMismatchCuda.jl) instead.
+*Do not load both in the same session — they conflict.*
+
+## Quick start
+
+```julia
+using RegisterMismatch, RegisterQD
+
+fixed  = Float64.(reshape(1:25, 5, 5))
+moving = circshift(fixed, (2, 1))   # known shift: 2 rows, 1 column
+
+tform, mm = qd_translate(fixed, moving, (3, 3))
+# tform.translation == [2.0, 1.0]
+# mm == 0.0
+```
+
+## Registration functions
+
 - `qd_translate`: register images by shifting one with respect to another (translations only)
 - `qd_rigid`: register images using rotations and translations
 - `qd_affine`: register images using arbitrary affine transformations
 
-In general, using more degrees of freedom allows you to solve harder optimization problems, but also makes it harder to find the global optimum. Your best strategy is to permit no more degrees of freedom than needed to solve the problem.
+In general, using more degrees of freedom allows you to solve harder optimization problems, but also makes it harder to find the global optimum.
+Use no more degrees of freedom than your problem requires.
 
-See the help on these functions for details about how to call them.
+## Anisotropic sampling
 
-Another important feature of this package is that it supports images that were sampled anisotropically. This is particularly common for three-dimensional biomedical imaging, where MRI and optical microscopy typically have one axis sampled at lower resolution.
-A rotation (from a rigid transformation) in physical space needs to be modified before applying it to an anisotropically-sampled image; see `arrayscale` and `getSD` for more information.
+This package supports images sampled anisotropically, which is common in 3-D biomedical imaging (e.g. MRI, optical sections where the axial resolution differs from the in-plane resolution).
+Pass `SD = diagm(voxelspacing)` to the registration functions to account for non-uniform spacing.
+See [`arrayscale`](https://HolyLab.github.io/RegisterQD.jl/stable/api/#RegisterQD.arrayscale) and [`getSD`](https://HolyLab.github.io/RegisterQD.jl/stable/api/#RegisterQD.getSD) for details, and the [User Guide](https://HolyLab.github.io/RegisterQD.jl/stable/guide/) for a full explanation.
 
-**NOTE**: see NEWS.md for information about a recent breaking change.
+**NOTE**: see NEWS.md for information about recent breaking changes.
