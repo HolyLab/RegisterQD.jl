@@ -78,6 +78,6 @@ end
     moving = OffsetArray(rand(5, 5), 1:5, 1:5)
     fixed  = OffsetArray(rand(5, 5), 3:7, 3:7)
     vm, vf = RegisterQD.warp_and_intersect(moving, fixed, IdentityTransformation())
-    @test axes(vm) == axes(vf)
-    @test length.(axes(vm)) == (3, 3)  # intersection of 1:5 and 3:7 has 3 elements per dim
+    @test Base.axes(vm) == Base.axes(vf)
+    @test length.(Base.axes(vm)) == (3, 3)  # intersection of 1:5 and 3:7 has 3 elements per dim
 end
