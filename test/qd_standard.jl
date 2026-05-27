@@ -18,7 +18,7 @@ using Random
 function fixedmov(img, tfm)
     img = float(img)
     img2 = warp(img, tfm)
-    inds = OffsetArrays.IdentityUnitRange.(intersect.(axes(img), axes(img2)))
+    inds = OffsetArrays.IdentityUnitRange.(intersect.(Base.axes(img), Base.axes(img2)))
     fixed = img[inds...]
     moving = img2[inds...]
     return fixed, moving

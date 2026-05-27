@@ -41,7 +41,7 @@ using Test, TestImages
     newfixed = warp(moving, tfm0)
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(Base.axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (5, 5, 5)
 
@@ -56,7 +56,7 @@ using Test, TestImages
     newfixed = warp(moving, tfm0)
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(Base.axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (10, 10)
     mxrot = pi / 90
@@ -73,7 +73,7 @@ using Test, TestImages
     newfixed = warp(moving, tfm0)
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(Base.axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.1 * sum(abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (5, 5, 5)
     mxrot = [pi / 90; pi / 90; pi / 90]
@@ -95,7 +95,7 @@ using Test, TestImages
     newfixed = warp(moving, tfm0)
     itp = interpolate(newfixed, BSpline(Linear()))
     etp = extrapolate(itp, NaN)
-    fixed = etp(axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
+    fixed = etp(Base.axes(moving)...) #often the warped array has one-too-many pixels in one or more dimensions due to extrapolation
     thresh = 0.5 * sum(abs2.(fixed[.!(isnan.(fixed))]))
     mxshift = (5, 5)
     SD = SDiagonal(@SVector(ones(ndims(fixed))))
@@ -116,7 +116,7 @@ using Test, TestImages
     #mat = SArray{Tuple{3,3}}(eye(3) + rand(3,3)./30 + -rand(3,3)./30);
     #tfm0 = AffineMap(mat, shft); #ground truth
     #newfixed = warp(moving, tfm0);
-    #inds = intersect.(axes(moving), axes(newfixed))
+    #inds = intersect.(Base.axes(moving), axes(newfixed))
     #fixed = newfixed[inds...]
     #moving = moving[inds...]
     #thresh = 0.1 * (sum(abs2.(fixed[.!(isnan.(fixed))]))+sum(abs2.(moving[.!(isnan.(moving))])));
@@ -139,7 +139,7 @@ using Test, TestImages
     ##tfm0 = recenter(tfm00, center(moving)); #ground truth
     #tfm0 = tfm00 #ground truth
     #newfixed = warp(moving, tfm0);
-    #inds = intersect.(axes(moving), axes(newfixed))
+    #inds = intersect.(Base.axes(moving), axes(newfixed))
     #fixed = newfixed[inds...]
     #moving = moving[inds...]
     #thresh = 0.5 * sum(abs2.(fixed[.!(isnan.(fixed))]));
