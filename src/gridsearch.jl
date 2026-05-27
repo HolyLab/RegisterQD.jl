@@ -86,8 +86,8 @@ See [`grid_rotations`](@ref) for how `maxradians`, `rgridsz`, and `SD` shape the
 
 # Examples
 
-```julia-repl
-julia> using RegisterMismatch, CoordinateTransformations, Rotations, ImageTransformations
+```jldoctest
+julia> using RegisterMismatch, CoordinateTransformations, Rotations, ImageFiltering, ImageTransformations
 
 julia> fixed = Float64.(reshape(1:100, 10, 10));
 
